@@ -20,6 +20,44 @@
     "beyondCode": "Abseits vom Code?",
     "beyondCodeText": "Ich mache Musik und lege gelegentlich in VRChat auf. Wenn ich offline bin, gehe ich wahrscheinlich gerade mit unseren zwei Pomskys spazieren."
   },
+  "projects": {
+    "title": "Projekte",
+    "tuningSchweiz": {
+      "title": "Tuning Schweiz App",
+      "description": "Eine massgeschneiderte Event-App für die grösste Auto-Community der Schweiz mit über 8'500 Mitgliedern. Mit Event-Management, Treffen-Koordination und Community-Funktionen.",
+      "thought": "Mein Herzensprojekt! Begann als kleine Idee und wurde zu etwas Grossartigem."
+    },
+    "businessSystem": {
+      "title": "Business Management System",
+      "description": "Eine komplette Unternehmenslösung mit CRM, Zeiterfassung, Dokumentenmanagement und Workflow-Automatisierung. Entwickelt für Brabender Solutions.",
+      "thought": "Lerne hier so viel über Enterprise-Architektur!"
+    },
+    "vrElevator": {
+      "title": "VR Marketing Erlebnis",
+      "description": "Eine immersive Virtual-Reality-Anwendung für Aufzugshersteller, die Kunden ermöglicht, Produkte in einem virtuellen Showroom zu erleben.",
+      "thought": "Mein erstes VR-Projekt – die Reaktionen der Leute waren unbezahlbar!"
+    },
+    "dogCamera": {
+      "title": "Pomsky Cam",
+      "description": "Eine Raspberry Pi-betriebene Hundekamera, die unsere zwei Pomskys überwacht und Echtzeit-Updates an Discord sendet, wenn Aktivität erkannt wird.",
+      "thought": "Gebaut, weil ich unsere Fellnasen bei der Arbeit vermisst habe!"
+    },
+    "crowDesk": {
+      "title": "Crow Desk",
+      "description": "Eine professionelle Aufgabenverwaltungs-Plattform für Teams mit Projektorganisation, Aufgabenverfolgung, Team-Zusammenarbeit und einem Kundenportal mit Echtzeit-Updates.",
+      "thought": "Ein herausforderndes Projekt, das meine Full-Stack-Skills gefordert hat!"
+    },
+    "syncShift": {
+      "title": "Sync Shift",
+      "description": "Eine mobile Zeiterfassungs-App, entwickelt für ein Unternehmen im industriellen Bereich. Mitarbeiter:innen können Schichten starten, pausieren, beenden und Notizen hinzufügen – verfügbar auf Android & iOS.",
+      "thought": "Einfaches Konzept, aber die Details machten es spannend!"
+    },
+    "clientWebsites": {
+      "title": "Kunden-Webseiten",
+      "description": "Verschiedene Webseiten für lokale Unternehmen und Organisationen mit WordPress erstellt, mit individuellen Designs und Funktionen, die auf die Bedürfnisse jedes Kunden zugeschnitten sind.",
+      "thought": "Ich liebe es, lokalen Unternehmen online zu helfen!"
+    }
+  },
   "notFound": {
     "title": "404",
     "message": "Seite nicht gefunden",

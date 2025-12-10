@@ -20,6 +20,44 @@
     "beyondCode": "Beyond the code?",
     "beyondCodeText": "I make music and occasionally DJ in VRChat. When I'm offline, I'm probably out walking our two Pomskies."
   },
+  "projects": {
+    "title": "Projects",
+    "tuningSchweiz": {
+      "title": "Tuning Schweiz App",
+      "description": "A custom event app for Switzerland's largest car community with over 8,500 members. Features event management, meetup coordination, and community features.",
+      "thought": "My passion project! Started as a small idea and grew into something amazing."
+    },
+    "businessSystem": {
+      "title": "Business Management System",
+      "description": "A complete enterprise solution including CRM, time tracking, document management, and workflow automation. Built for Brabender Solutions.",
+      "thought": "Learning so much about enterprise architecture here!"
+    },
+    "vrElevator": {
+      "title": "VR Marketing Experience",
+      "description": "An immersive virtual reality application for elevator manufacturers, allowing customers to experience products in a virtual showroom.",
+      "thought": "My first VR project – seeing people's reactions was priceless!"
+    },
+    "dogCamera": {
+      "title": "Pomsky Cam",
+      "description": "A Raspberry Pi-powered dog camera that monitors our two Pomskies and sends real-time updates to Discord when it detects activity.",
+      "thought": "Built this because I missed our fluffballs during work!"
+    },
+    "crowDesk": {
+      "title": "Crow Desk",
+      "description": "A professional task management platform for teams, featuring project organization, task tracking, team collaboration, and a client portal with real-time updates.",
+      "thought": "A challenging project that pushed my full-stack skills!"
+    },
+    "syncShift": {
+      "title": "Sync Shift",
+      "description": "A mobile time tracking app developed for an industrial company. Employees can start, pause, and end shifts, as well as add notes – available on Android & iOS.",
+      "thought": "Simple concept, but the details made it interesting!"
+    },
+    "clientWebsites": {
+      "title": "Client Websites",
+      "description": "Various websites built for local businesses and organizations using WordPress, featuring custom designs and functionality tailored to each client's needs.",
+      "thought": "Love helping local businesses get online!"
+    }
+  },
   "notFound": {
     "title": "404",
     "message": "Page not found",

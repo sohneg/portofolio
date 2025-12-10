@@ -58,7 +58,7 @@ export default function Navigation() {
       </svg>
 
       {/* Desktop: Links fixiert */}
-      <nav className="hidden md:flex fixed left-6 top-1/2 -translate-y-1/2 flex-col bg-nav p-2 rounded-full">
+      <nav className="hidden md:flex fixed left-6 top-1/2 -translate-y-1/2 flex-col bg-nav p-2 rounded-full z-50">
         <div className="relative flex flex-col gap-2">
           {/* Gooey container */}
           <div className="absolute inset-0 pointer-events-none" style={{ filter: 'url(#goo)' }}>
@@ -116,7 +116,7 @@ export default function Navigation() {
       </nav>
 
       {/* Mobile: Unten fixiert */}
-      <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 flex bg-nav p-2 rounded-full">
+      <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 flex bg-nav p-2 rounded-full z-50">
         <div className="relative flex gap-2">
           {/* Gooey container */}
           <div className="absolute inset-0 pointer-events-none" style={{ filter: 'url(#goo)' }}>

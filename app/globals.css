@@ -40,3 +40,46 @@ body {
     color: var(--text-secondary);
   }
 }
+
+/* Timeline dot pulse animation */
+@keyframes gentle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes soft-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);
+  }
+}
+
+.animate-gentle-pulse {
+  animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+.animate-soft-glow {
+  animation: soft-glow 2s ease-in-out infinite;
+}
+
+/* Thought bubble snake/wave float animation */
+@keyframes float-wave {
+  0%, 100% {
+    transform: translateY(3px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-float-wave {
+  animation: float-wave 2s ease-in-out infinite;
+}
