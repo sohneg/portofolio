@@ -22,6 +22,7 @@ export default function Navigation() {
   const activeIndex = navItems.findIndex(item => item.href === pathname)
   const [prevIndex, setPrevIndex] = useState(activeIndex)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (activeIndex !== prevIndex) {
@@ -71,6 +72,25 @@ export default function Navigation() {
                 }}
               />
             )}
+            {/* Hover blob - small chunk that gets pulled towards hovered item */}
+            {activeIndex !== -1 && (
+              <div
+                className={`absolute w-5 h-5 bg-orange-500 rounded-full
+                  ${hoveredIndex !== null && hoveredIndex !== activeIndex
+                    ? ''
+                    : 'transition-all duration-300'}`}
+                style={{
+                  left: '14px',
+                  top: `${activeIndex * 56 + 14 + (hoveredIndex !== null && hoveredIndex !== activeIndex
+                    ? (hoveredIndex > activeIndex ? 20 : -20)
+                    : 0)}px`,
+                  opacity: hoveredIndex !== null && hoveredIndex !== activeIndex ? 1 : 0,
+                  animation: hoveredIndex !== null && hoveredIndex !== activeIndex
+                    ? `${hoveredIndex > activeIndex ? 'blob-struggle-down' : 'blob-struggle-up'} 0.6s ease-in-out infinite`
+                    : 'none',
+                }}
+              />
+            )}
             {/* Previous position blob for metaball stretch */}
             {isAnimating && prevIndex !== -1 && (
               <div
@@ -84,10 +104,12 @@ export default function Navigation() {
             )}
           </div>
 
-          {navItems.map((item) => (
+          {navItems.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
               className={`relative z-10 w-12 h-12 flex items-center justify-center rounded-full transition-colors duration-300
                 ${pathname === item.href
                   ? 'text-white'
@@ -129,6 +151,25 @@ export default function Navigation() {
                 }}
               />
             )}
+            {/* Hover blob - small chunk that gets pulled towards hovered item */}
+            {activeIndex !== -1 && (
+              <div
+                className={`absolute w-5 h-5 bg-orange-500 rounded-full
+                  ${hoveredIndex !== null && hoveredIndex !== activeIndex
+                    ? ''
+                    : 'transition-all duration-300'}`}
+                style={{
+                  top: '14px',
+                  left: `${activeIndex * 56 + 14 + (hoveredIndex !== null && hoveredIndex !== activeIndex
+                    ? (hoveredIndex > activeIndex ? 20 : -20)
+                    : 0)}px`,
+                  opacity: hoveredIndex !== null && hoveredIndex !== activeIndex ? 1 : 0,
+                  animation: hoveredIndex !== null && hoveredIndex !== activeIndex
+                    ? `${hoveredIndex > activeIndex ? 'blob-struggle-right' : 'blob-struggle-left'} 0.6s ease-in-out infinite`
+                    : 'none',
+                }}
+              />
+            )}
             {/* Previous position blob for metaball stretch */}
             {isAnimating && prevIndex !== -1 && (
               <div
@@ -142,10 +183,12 @@ export default function Navigation() {
             )}
           </div>
 
-          {navItems.map((item) => (
+          {navItems.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
               className={`relative z-10 w-12 h-12 flex items-center justify-center rounded-full transition-colors duration-300
                 ${pathname === item.href
                   ? 'text-white'
