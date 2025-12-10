@@ -1,16 +1,33 @@
 import Link from 'next/link'
 
-export default function NotFound() {
+export default function GlobalNotFound() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8">
-      <h1 className="text-5xl font-bold mb-6">404</h1>
-      <p className="text-lg text-secondary mb-8">Page not found</p>
-      <Link
-        href="/"
-        className="px-6 py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
-      >
-        Go Home
-      </Link>
-    </main>
+    <html lang="en">
+      <body style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, sans-serif',
+        backgroundColor: '#1a1210',
+        color: '#f9f7f4'
+      }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: 'bold', marginBottom: '1rem' }}>404</h1>
+        <p style={{ marginBottom: '2rem', color: '#a09890' }}>Page not found</p>
+        <Link
+          href="/en"
+          style={{
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#f97316',
+            color: 'white',
+            borderRadius: '9999px',
+            textDecoration: 'none'
+          }}
+        >
+          Go Home
+        </Link>
+      </body>
+    </html>
   )
 }

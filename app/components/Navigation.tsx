@@ -1,20 +1,22 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
+import { Link, usePathname, useRouter } from '@/i18n/routing'
+import { useLocale } from 'next-intl'
 import { useTheme } from './ThemeProvider'
 import { useEffect, useState } from 'react'
-import { Home, User, Briefcase, Mail, Sun, Moon } from 'lucide-react'
+import { Home, User, Briefcase, Mail, Sun, Moon, Globe } from 'lucide-react'
 
 const navItems = [
-  { href: '/', icon: <Home />, label: 'Home' },
-  { href: '/about', icon: <User />, label: 'About' },
-  { href: '/projects', icon: <Briefcase />, label: 'Projects' },
-  { href: '/contact', icon: <Mail />, label: 'Contact' },
+  { href: '/' as const, icon: <Home /> },
+  { href: '/about' as const, icon: <User /> },
+  { href: '/projects' as const, icon: <Briefcase /> },
+  { href: '/contact' as const, icon: <Mail /> },
 ]
 
 export default function Navigation() {
   const pathname = usePathname()
+  const locale = useLocale()
+  const router = useRouter()
   const { theme, toggleTheme } = useTheme()
 
   const activeIndex = navItems.findIndex(item => item.href === pathname)
@@ -31,6 +33,11 @@ export default function Navigation() {
       return () => clearTimeout(timer)
     }
   }, [activeIndex, prevIndex])
+
+  const toggleLocale = () => {
+    const newLocale = locale === 'en' ? 'de' : 'en'
+    router.replace(pathname, { locale: newLocale })
+  }
 
   return (
     <>
@@ -92,12 +99,20 @@ export default function Navigation() {
           ))}
         </div>
 
-        <button
-          onClick={toggleTheme}
-          className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all mt-2"
-        >
-          <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
-        </button>
+        <div className="flex flex-col gap-2 mt-2">
+          <button
+            onClick={toggleLocale}
+            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all text-sm font-medium"
+          >
+            {locale.toUpperCase()}
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all"
+          >
+            <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile: Unten fixiert */}
@@ -142,12 +157,20 @@ export default function Navigation() {
           ))}
         </div>
 
-        <button
-          onClick={toggleTheme}
-          className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all ml-2"
-        >
-          <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
-        </button>
+        <div className="flex gap-2 ml-2">
+          <button
+            onClick={toggleLocale}
+            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all text-sm font-medium"
+          >
+            {locale.toUpperCase()}
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all"
+          >
+            <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
+          </button>
+        </div>
       </nav>
     </>
   )

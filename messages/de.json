@@ -1,0 +1,32 @@
+{
+  "navigation": {
+    "home": "Startseite",
+    "about": "Über mich",
+    "projects": "Projekte",
+    "contact": "Kontakt"
+  },
+  "home": {
+    "greeting": "Hey",
+    "description": "Ich bin Simon Sohneg, ein zertifizierter Software-Entwickler und ehemaliger Bäcker. Getrieben von Neugier und der Liebe zum Erschaffen, habe ich meine Leidenschaft zum Beruf gemacht. Jetzt baue ich Webseiten, Apps, Software und Spiele."
+  },
+  "about": {
+    "title": "Über mich",
+    "whoAmI": "Wer bin ich?",
+    "whoAmIText": "Ich bin Simon, ein zertifizierter Entwickler aus Kriens, Schweiz. Als Kind sagte ich, ich würde entweder Bäcker oder Entwickler werden – das Leben machte mich zu beidem. Nach 10 Jahren als Bäcker gab mir eine Mehlallergie den Anstoss, mein langjähriges Hobby zum Beruf zu machen.",
+    "whatDoIDo": "Was mache ich?",
+    "whatDoIDoText": "Ich baue Werkzeuge, die das Leben einfacher machen. Aktuell bei Brabender Solutions entwickle ich ein komplettes Business-System – CRM, Zeiterfassung, Dokumentenmanagement und mehr – mit Blazor und WPF. In früheren Rollen habe ich eine VR-Marketing-App für Aufzugshersteller erstellt. Ausserhalb der Arbeit habe ich Tuning Schweiz gegründet, eine Auto-Community mit über 8'500 Mitgliedern, für die ich eine eigene Event-App entwickelt habe.",
+    "whatDoIWorkWith": "Womit arbeite ich?",
+    "whatDoIWorkWithText": "C#, Blazor, WPF, Angular, TypeScript, Flutter, Python, Docker – und Unreal Engine 5 und Unity für Spieleentwicklung. Ich bastele auch gerne an Raspberry Pi Projekten, wie der Hundekamera, die Discord-Updates von unseren zwei Pomskys sendet.",
+    "beyondCode": "Abseits vom Code?",
+    "beyondCodeText": "Ich mache Musik und lege gelegentlich in VRChat auf. Wenn ich offline bin, gehe ich wahrscheinlich gerade mit unseren zwei Pomskys spazieren."
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Seite nicht gefunden",
+    "goHome": "Zur Startseite"
+  },
+  "metadata": {
+    "title": "Mein Portfolio",
+    "description": "Zertifizierter Entwickler für Webseiten, Apps, Software und Spiele"
+  }
+}
