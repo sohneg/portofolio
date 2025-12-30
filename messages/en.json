@@ -10,15 +10,24 @@
     "description": "I'm Simon Sohneg, a certified developer and former baker. Driven by curiosity and a love for creating things, I turned my passion into a career. Now I build websites, apps, software and games."
   },
   "about": {
-    "title": "About",
-    "whoAmI": "Who am I?",
-    "whoAmIText": "I'm Simon, a certified developer from Kriens, Switzerland. As a kid, I said I'd become either a baker or a developer – life made me both. After 10 years as a baker, a flour allergy gave me the push to turn my longtime hobby into my career.",
-    "whatDoIDo": "What do I do?",
-    "whatDoIDoText": "I build tools that make life easier. Currently at Brabender Solutions, I'm developing a complete business system – CRM, time tracking, document management, and more – using Blazor and WPF. In previous roles, I created a VR marketing app for elevator manufacturers. Outside of work, I founded Tuning Schweiz, a car community with over 8,500 members, for which I developed a custom event app.",
-    "whatDoIWorkWith": "What do I work with?",
-    "whatDoIWorkWithText": "C#, Blazor, WPF, Angular, TypeScript, Flutter, Python, Docker – and Unreal Engine 5 and Unity for game development. I also enjoy tinkering with Raspberry Pi projects, like the dog camera that sends Discord updates of our two Pomskies.",
-    "beyondCode": "Beyond the code?",
-    "beyondCodeText": "I make music and occasionally DJ in VRChat. When I'm offline, I'm probably out walking our two Pomskies."
+    "title": "About me",
+    "subtitle": "A journey from flour to code",
+    "scrollHint": "Scroll to discover my story",
+    "chapter1Title": "The Baker",
+    "chapter1Text": "As a kid, I always said: I'll either become a baker or work in IT. So I became a baker first. I learned the craft by hand in a small bakery – with the best sourdough around. Then I worked at larger operations. 10 years of early mornings, turning simple ingredients into something delicious. I loved making people happy.",
+    "chapter2Title": "The Turning Point",
+    "chapter2Text": "My flour allergy kept getting worse – until one day I couldn't breathe anymore. I pushed through for a while because I loved the job. But then it became clear: time for Plan B. Or was it actually Plan A all along?",
+    "chapter3Title": "A New Beginning",
+    "chapter3Text": "Disability insurance enabled me to start a second apprenticeship – and Schindler Elevators gave me the chance. I learned so much there: from VoIP communication (I built a fallback website for emergency calls during network outages) to working in R&D on the top-secret Schindler X8. My first project? A parallax effect in Unity with face tracking – luckily I'd already been tinkering with it as a hobby. The camera tracked my position, turning the screen into a window to a 3D world. That's when I knew: this is my thing.",
+    "chapter4Title": "At Work",
+    "chapter4Text": "Now I work at Brabender Solutions. There I develop a comprehensive business system and a document AI. I love solving complex problems and making people's lives easier.",
+    "chapter5Title": "On the Side",
+    "chapter5Text": "In my free time, I founded Tuning Schweiz – a car community with over 8,500 members, its own event app and website. I also build VR experiences and games, and tinker with Raspberry Pis. My projects are my playground.",
+    "chapter6Title": "The Passion",
+    "chapter6Text": "I don't lock myself into one tech stack – I pick the right tool for each project. Web, apps, VR, or games: what matters is bringing ideas to life. The passion for creating stayed – only the medium changed.",
+    "chapter7Title": "Life Beyond Code",
+    "chapter7Text": "When I'm not coding, I make electronic music as Sonex or DJ in VRChat. And our two Pomskies Ari and Luci make sure I get enough fresh air.",
+    "closingQuote": "I still make cookies – they just have a different meaning now."
   },
   "projects": {
     "title": "Projects",
