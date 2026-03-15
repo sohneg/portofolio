@@ -184,15 +184,15 @@ export default function About() {
         nextSection="default"
       />
 
-      <GridBackground
-        filterId="dissolve-about"
-        filterSeed={789}
-        filterFrequency={0.015}
-        filterSlope={2.5}
-        filterIntercept={-0.6}
-        fixed
-        style={{ transform: `translateY(${scrollYRef.current * -0.02}px)` }}
-      />
+      <div ref={gridBgRef} className="fixed inset-0 z-[1]" style={{ willChange: 'transform' }}>
+        <GridBackground
+          filterId="dissolve-about"
+          filterSeed={789}
+          filterFrequency={0.015}
+          filterSlope={2.5}
+          filterIntercept={-0.6}
+        />
+      </div>
 
       {/* Hero + 3D keyword zoom combined */}
       <KeywordZoom
