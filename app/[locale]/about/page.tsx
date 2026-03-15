@@ -247,7 +247,7 @@ export default function About() {
           key={section.id}
           id={section.id}
           ref={(el) => { sectionRefs.current[index + 1] = el }}
-          className="min-h-screen flex items-start pt-[8vh] md:items-center md:pt-0 justify-center relative px-8 md:px-8 md:pl-24 z-[2]"
+          className="min-h-screen flex items-center pb-[15vh] md:pb-0 justify-center relative px-8 md:pl-24 z-[2]"
         >
           {section.id === 'code' ? (
             /* Terminal window for Code section */
