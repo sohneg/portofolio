@@ -127,6 +127,45 @@ export default function GridBackground({
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    const isMobile = window.innerWidth < 768
+
+    // On mobile: draw static grid once, no animation loop
+    if (isMobile) {
+      const dpr = window.devicePixelRatio || 1
+      const resize = () => {
+        const rect = canvas.getBoundingClientRect()
+        canvas.width = rect.width * dpr
+        canvas.height = rect.height * dpr
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        sizeRef.current = { w: rect.width, h: rect.height, left: rect.left, top: rect.top }
+
+        isDarkRef.current = document.documentElement.getAttribute('data-theme') !== 'light'
+        gridColorRef.current = isDarkRef.current ? 'rgba(128,128,128,0.25)' : 'rgba(128,128,128,0.18)'
+
+        const { w, h } = sizeRef.current
+        ctx.clearRect(0, 0, w, h)
+        ctx.strokeStyle = gridColorRef.current
+        ctx.lineWidth = 1
+        const hLines = Math.floor(h / gridSpacing)
+        const vLines = Math.floor(w / gridSpacing)
+        for (let i = 1; i <= hLines; i++) {
+          ctx.beginPath()
+          ctx.moveTo(0, i * gridSpacing)
+          ctx.lineTo(w, i * gridSpacing)
+          ctx.stroke()
+        }
+        for (let i = 1; i <= vLines; i++) {
+          ctx.beginPath()
+          ctx.moveTo(i * gridSpacing, 0)
+          ctx.lineTo(i * gridSpacing, h)
+          ctx.stroke()
+        }
+      }
+      resize()
+      window.addEventListener('resize', resize)
+      return () => window.removeEventListener('resize', resize)
+    }
+
     const buildRainbowField = (w: number, h: number) => {
       const fc = document.createElement('canvas')
       fc.width = Math.ceil(w)
