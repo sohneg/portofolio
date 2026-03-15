@@ -183,16 +183,7 @@ export default function About() {
     <main data-about-page className="relative transition-[background-color,color] duration-700">
       <BootSequence
         active={bootActive}
-        onDone={() => {
-          setBootActive(false)
-          // Scroll to terminal after boot
-          const codeEl = document.getElementById('code')
-          if (codeEl) {
-            const isMobile = window.innerWidth < 768
-            const target = isMobile ? codeEl.offsetTop : codeEl.offsetTop - (window.innerHeight - codeEl.offsetHeight) / 2
-            window.scrollTo({ top: target, behavior: 'smooth' })
-          }
-        }}
+        onDone={() => setBootActive(false)}
       />
       <PageAtmosphere
         ref={atmosphereRef}

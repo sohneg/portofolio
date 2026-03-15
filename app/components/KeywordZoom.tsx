@@ -361,7 +361,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
               if (typeof flyInRef === 'function') flyInRef(el)
               else if (flyInRef && 'current' in flyInRef) (flyInRef as React.MutableRefObject<HTMLDivElement | null>).current = el
             }}
-            className="absolute inset-0 flex items-start pt-[15vh] md:items-center md:pt-0 justify-center px-8 md:px-8 md:pl-24"
+            className="absolute inset-0 flex items-start pt-[20vh] md:items-center md:pt-0 justify-center px-8 md:px-8 md:pl-24"
             style={{
               transformStyle: 'preserve-3d',
               opacity: 0,
@@ -378,7 +378,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
         {flyInTitle && flyInText && (
           <div
             ref={scatterRef}
-            className="absolute inset-0 flex items-start pt-[15vh] md:items-center md:pt-0 justify-center px-2 md:px-8 md:pl-24 overflow-hidden"
+            className="absolute inset-0 flex items-start pt-[20vh] md:items-center md:pt-0 justify-center px-2 md:px-8 md:pl-24 overflow-hidden"
             style={{ display: 'none', zIndex: 30 }}
           >
             <div className="max-w-2xl mx-auto text-center font-serif">

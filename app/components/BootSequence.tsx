@@ -57,6 +57,15 @@ export default function BootSequence({ active, onDone }: BootSequenceProps) {
     if (active && phase === 'idle') {
       setPhase('glitch')
       startRef.current = performance.now()
+      // Scroll to terminal in background while boot plays
+      setTimeout(() => {
+        const codeEl = document.getElementById('code')
+        if (codeEl) {
+          const isMobile = window.innerWidth < 768
+          const target = isMobile ? codeEl.offsetTop : codeEl.offsetTop - (window.innerHeight - codeEl.offsetHeight) / 2
+          window.scrollTo({ top: target, behavior: 'smooth' })
+        }
+      }, GLITCH_DURATION + FADE_DURATION + 500) // start scrolling once boot text is showing
     }
     if (!active && phase !== 'idle') {
       // Reset
@@ -172,7 +181,7 @@ export default function BootSequence({ active, onDone }: BootSequenceProps) {
 
       {/* Boot text */}
       {(phase === 'boot' || phase === 'fadeout') && (
-        <div className={`absolute inset-0 flex items-start justify-start p-10 pt-16 md:p-20 overflow-hidden ${bootFont.className}`}>
+        <div className={`absolute inset-0 flex items-start justify-start p-10 pt-16 md:py-24 md:px-32 overflow-hidden ${bootFont.className}`}>
           <div className="text-sm md:text-base leading-relaxed">
             {BOOT_LINES.map((line, i) => {
               if (bootTime < line.delay) return null
