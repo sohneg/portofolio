@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl'
 import { FaGooglePlay, FaAppStoreIos, FaInstagram, FaTiktok, FaYoutube, FaGlobe } from 'react-icons/fa6'
 import Tooltip from '@/components/Tooltip'
 import ThoughtBubble from '@/components/ThoughtBubble'
+import { projects as projectData } from '@/data/projects'
 
 // SVG filters for dissolving effect with different seeds
 const DissolveFilters = () => (
@@ -20,52 +21,29 @@ const DissolveFilters = () => (
   </svg>
 )
 
-const projects = [
-  {
-    key: 'tuningSchweiz',
-    tech: ['Flutter', 'Dart', 'Laravel', 'Firebase', 'Angular'],
-    links: [
-      { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.tuningschweiz', label: 'Google Play' },
-      { icon: <FaAppStoreIos />, href: 'https://apps.apple.com/app/tuning-schweiz/id6502833192', label: 'App Store' },
-      { icon: <FaGlobe />, href: 'https://tuning-schweiz.ch/', label: 'Website' },
-      { icon: <FaInstagram />, href: 'https://www.instagram.com/tuningschweizofficial/', label: 'Instagram' },
-      { icon: <FaTiktok />, href: 'https://www.tiktok.com/@tuningschweiz', label: 'TikTok' },
-      { icon: <FaYoutube />, href: 'https://www.youtube.com/channel/UCAPprVHXAHkJG3DPFPnk8cA', label: 'YouTube' },
-    ],
-  },
-  {
-    key: 'businessSystem',
-    tech: ['C#', 'Blazor', 'WPF', 'SQL Server'],
-  },
-  {
-    key: 'vrElevator',
-    tech: ['Unity 6', 'C#', 'Meta Quest 3'],
-  },
-  {
-    key: 'dogCamera',
-    tech: ['Raspberry Pi', 'Python', 'Discord API'],
-  },
-  {
-    key: 'crowDesk',
-    tech: ['React', 'PostgreSQL', 'Node.js'],
-    links: [
-      { icon: <FaGlobe />, href: 'https://www.crow-desk.com/', label: 'Crow Desk' },
-    ],
-  },
-  {
-    key: 'syncShift',
-    tech: ['Flutter', 'Dart', 'Android', 'iOS'],
-  },
-  {
-    key: 'clientWebsites',
-    tech: ['WordPress', 'Angular', 'PHP', 'CSS'],
-    links: [
-      { icon: <FaGlobe />, href: 'https://chlitierpark.ch/', label: 'Chlitierpark Kriens' },
-      { icon: <FaGlobe />, href: 'https://pflegeheld-dahoam.ch/', label: 'Pflegeheld Dahoam' },
-      { icon: <FaGlobe />, href: 'https://tuning-emotion.ch/', label: 'Tuning Emotion' },
-    ],
-  },
-]
+const projectLinks: Record<string, { icon: React.ReactNode; href: string; label: string }[]> = {
+  tuningSchweiz: [
+    { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.tuningschweiz', label: 'Google Play' },
+    { icon: <FaAppStoreIos />, href: 'https://apps.apple.com/app/tuning-schweiz/id6502833192', label: 'App Store' },
+    { icon: <FaGlobe />, href: 'https://tuning-schweiz.ch/', label: 'Website' },
+    { icon: <FaInstagram />, href: 'https://www.instagram.com/tuningschweizofficial/', label: 'Instagram' },
+    { icon: <FaTiktok />, href: 'https://www.tiktok.com/@tuningschweiz', label: 'TikTok' },
+    { icon: <FaYoutube />, href: 'https://www.youtube.com/channel/UCAPprVHXAHkJG3DPFPnk8cA', label: 'YouTube' },
+  ],
+  crowDesk: [
+    { icon: <FaGlobe />, href: 'https://www.crow-desk.com/', label: 'Crow Desk' },
+  ],
+  clientWebsites: [
+    { icon: <FaGlobe />, href: 'https://chlitierpark.ch/', label: 'Chlitierpark Kriens' },
+    { icon: <FaGlobe />, href: 'https://pflegeheld-dahoam.ch/', label: 'Pflegeheld Dahoam' },
+    { icon: <FaGlobe />, href: 'https://tuning-emotion.ch/', label: 'Tuning Emotion' },
+  ],
+}
+
+const projects = projectData.map(p => ({
+  ...p,
+  links: projectLinks[p.key],
+}))
 
 export default function Projects() {
   const t = useTranslations('projects')

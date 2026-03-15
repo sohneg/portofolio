@@ -117,7 +117,7 @@ export default function TerminalSequence({ loginText, command, output, trigger }
 
       {/* Interactive prompt after animation */}
       {showFinalPrompt && (
-        <InteractivePrompt onClear={() => setCleared(true)} />
+        <InteractivePrompt onClear={() => setCleared(true)} storyText={output} />
       )}
     </div>
   )
