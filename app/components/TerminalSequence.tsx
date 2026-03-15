@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import InteractivePrompt from './InteractivePrompt'
 
 interface TerminalSequenceProps {
   loginText: string
@@ -79,25 +80,27 @@ export default function TerminalSequence({ loginText, command, output, trigger }
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [phase])
 
-  const showLogin = phase !== 'idle'
-  const showPrompt = phase === 'prompt' || phase === 'typing' || phase === 'processing' || phase === 'done'
+  const [cleared, setCleared] = useState(false)
+
+  const showLogin = phase !== 'idle' && !cleared
+  const showPrompt = (phase === 'prompt' || phase === 'typing' || phase === 'processing' || phase === 'done') && !cleared
   const showCursor = phase === 'typing'
-  const showOutput = phase === 'done'
+  const showOutput = phase === 'done' && !cleared
   const showFinalPrompt = phase === 'done'
 
   return (
     <div>
       {/* Last login */}
       {showLogin && (
-        <div className="text-sm text-gray-500 mb-4">
+        <div className="text-gray-500">
           {loginDisplayed}
         </div>
       )}
 
       {/* Command line */}
       {showPrompt && (
-        <div className="text-green-400 mb-2">
-          <span className="text-green-600">root@sohneg.ch:~# </span>
+        <div className="text-green-400">
+          <span className="text-green-600" style={{ whiteSpace: 'pre' }}>{'root@sohneg.ch:~#  '}</span>
           {cmdDisplayed}
           {showCursor && (
             <span style={{ animation: 'blink 1s step-end infinite' }}>|</span>
@@ -105,19 +108,16 @@ export default function TerminalSequence({ loginText, command, output, trigger }
         </div>
       )}
 
-      {/* Output - appears instantly with prompt prefix */}
+      {/* Output - appears instantly */}
       {showOutput && (
-        <div className="text-green-400/80 mb-2">
-          <span className="text-green-600">root@sohneg.ch:~# </span>{output}
+        <div className="text-green-400/80">
+          {output}
         </div>
       )}
 
-      {/* Final prompt with cursor */}
+      {/* Interactive prompt after animation */}
       {showFinalPrompt && (
-        <div className="text-green-400 mt-4">
-          <span className="text-green-600">root@sohneg.ch:~# </span>
-          <span style={{ animation: 'blink 1s step-end infinite' }}>|</span>
-        </div>
+        <InteractivePrompt onClear={() => setCleared(true)} />
       )}
     </div>
   )

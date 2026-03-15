@@ -225,13 +225,17 @@ export default function About() {
                 <div className="relative p-6 md:p-8 text-base md:text-xl leading-relaxed">
                   {/* Invisible placeholder to reserve full size */}
                   <div aria-hidden="true" className="invisible">
-                    <div className="text-sm mb-4">Last login: Wed Mar 15 00:00:00 2026 from 000.000.000.000</div>
-                    <div className="mb-2">root@sohneg.ch:~# cat {t(section.titleKey).toLowerCase().replace(/\s+/g, '_')}.txt</div>
-                    <div className="mb-2">root@sohneg.ch:~# {t(section.textKey)}</div>
-                    <div className="mt-4">root@sohneg.ch:~# |</div>
+                    <div>Last login: Wed Mar 15 00:00:00 2026 from 000.000.000.000</div>
+                    <div>root@sohneg.ch:~# cat {t(section.titleKey).toLowerCase().replace(/\s+/g, '_')}.txt</div>
+                    <div>{t(section.textKey)}</div>
+                    <div>root@sohneg.ch:~# |</div>
                   </div>
-                  {/* Visible overlay */}
-                  <div className="absolute inset-0 p-6 md:p-8">
+                  {/* Visible overlay - scrollable, hidden scrollbar */}
+                  <div
+                    data-terminal-scroll
+                    className="absolute inset-0 p-6 md:p-8 overflow-y-auto overscroll-contain"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
                     <TerminalSequence
                       loginText={`Last login: ${new Date().toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', year: 'numeric', hour12: false })}${visitorIp ? ` from ${visitorIp}` : ''}`}
                       command={`cat ${t(section.titleKey).toLowerCase().replace(/\s+/g, '_')}.txt`}
