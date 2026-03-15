@@ -10,6 +10,7 @@ import KeywordZoom from '@/components/KeywordZoom'
 import TerminalSequence from '@/components/TerminalSequence'
 import ScrollSnap from '@/components/ScrollSnap'
 import BootSequence from '@/components/BootSequence'
+import WorkTabs from '@/components/WorkTabs'
 
 const terminalFont = VT323({ weight: '400', subsets: ['latin'] })
 
@@ -249,7 +250,32 @@ export default function About() {
           ref={(el) => { sectionRefs.current[index + 1] = el }}
           className="min-h-screen flex items-center pb-[15vh] md:pb-0 justify-center relative px-8 md:pl-24 z-[2]"
         >
-          {section.id === 'code' ? (
+          {section.id === 'work' ? (
+            /* Dashboard layout for Work section */
+            <div
+              className={`w-full max-w-4xl mx-auto transition-all duration-1000 ease-out
+                ${visibleSections.has(section.id)
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-16'}`}
+            >
+              <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+                {/* Header */}
+                <div className="px-6 py-4 md:px-8 md:py-5 border-b border-white/10 flex items-center justify-between">
+                  <h2 className="text-xl md:text-3xl font-bold">{t(section.titleKey)}</h2>
+                  <span className="text-xs md:text-sm opacity-50">Brabender Solutions</span>
+                </div>
+
+                {/* Text - short on mobile, full on desktop */}
+                <div className="px-6 py-5 md:px-8 md:py-6 border-b border-white/10">
+                  <p className="hidden md:block text-lg leading-relaxed opacity-80">{t(section.textKey)}</p>
+                  <p className="md:hidden text-sm leading-relaxed opacity-80">{t('chapter4TextShort')}</p>
+                </div>
+
+                {/* Tabs + Chips */}
+                <WorkTabs visible={visibleSections.has(section.id)} />
+              </div>
+            </div>
+          ) : section.id === 'code' ? (
             /* Terminal window for Code section */
             <div
               className={`w-full max-w-4xl mx-auto transition-all duration-1000 ease-out
