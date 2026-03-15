@@ -31,9 +31,9 @@ const darkAtmospheres: Record<string, Atmosphere> = {
     vignette: true, vignetteColor: 'rgba(20,12,5,0.5)', fontFamily: 'serif',
   },
   change: {
-    bg: '#1a1520', text: '#d4c8e0',
-    scanlines: false, noise: true, noiseColor: 'rgba(150,100,200,0.03)',
-    vignette: true, vignetteColor: 'rgba(10,5,20,0.6)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   code: {
     bg: '#0a0a0a', text: '#00ff41',
@@ -41,29 +41,29 @@ const darkAtmospheres: Record<string, Atmosphere> = {
     vignette: true, vignetteColor: 'rgba(0,0,0,0.7)', fontFamily: 'mono',
   },
   work: {
-    bg: '#0f1419', text: '#e2e8f0',
+    bg: '', text: '',
     scanlines: false, noise: false, noiseColor: '',
     vignette: false, vignetteColor: '', fontFamily: '',
   },
   tuning: {
-    bg: '#1a0a0a', text: '#f0c0c0',
-    scanlines: false, noise: true, noiseColor: 'rgba(200,50,50,0.03)',
-    vignette: true, vignetteColor: 'rgba(20,5,5,0.5)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   dice: {
-    bg: '#1a0f20', text: '#d4b8e8',
-    scanlines: false, noise: true, noiseColor: 'rgba(150,80,200,0.03)',
-    vignette: true, vignetteColor: 'rgba(15,5,25,0.5)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   infra: {
-    bg: '#0a1628', text: '#bfdbfe',
-    scanlines: false, noise: true, noiseColor: 'rgba(59,130,246,0.02)',
-    vignette: true, vignetteColor: 'rgba(5,10,30,0.5)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   life: {
-    bg: '#0b1a12', text: '#d1fae5',
-    scanlines: false, noise: true, noiseColor: 'rgba(16,185,129,0.02)',
-    vignette: true, vignetteColor: 'rgba(5,15,10,0.4)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
 }
 
@@ -80,39 +80,39 @@ const lightAtmospheres: Record<string, Atmosphere> = {
     vignette: true, vignetteColor: 'rgba(200,170,120,0.2)', fontFamily: 'serif',
   },
   change: {
-    bg: '#f0ecf5', text: '#3a2850',
-    scanlines: false, noise: true, noiseColor: 'rgba(130,90,180,0.03)',
-    vignette: true, vignetteColor: 'rgba(100,70,150,0.1)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   code: {
-    bg: '#0a0a0a', text: '#00ff41',  // Terminal is ALWAYS dark - that's the point
+    bg: '#0a0a0a', text: '#00ff41',
     scanlines: true, noise: false, noiseColor: '',
     vignette: true, vignetteColor: 'rgba(0,0,0,0.7)', fontFamily: 'mono',
   },
   work: {
-    bg: '#f1f5f9', text: '#1e293b',
+    bg: '', text: '',
     scanlines: false, noise: false, noiseColor: '',
     vignette: false, vignetteColor: '', fontFamily: '',
   },
   tuning: {
-    bg: '#fef2f2', text: '#7f1d1d',
-    scanlines: false, noise: true, noiseColor: 'rgba(200,50,50,0.03)',
-    vignette: true, vignetteColor: 'rgba(200,50,50,0.08)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   dice: {
-    bg: '#f5f0ff', text: '#3b1f6e',
-    scanlines: false, noise: true, noiseColor: 'rgba(130,80,200,0.03)',
-    vignette: true, vignetteColor: 'rgba(130,80,200,0.08)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   infra: {
-    bg: '#eff6ff', text: '#1e3a5f',
-    scanlines: false, noise: true, noiseColor: 'rgba(59,130,246,0.03)',
-    vignette: true, vignetteColor: 'rgba(59,130,246,0.08)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
   life: {
-    bg: '#ecfdf5', text: '#064e3b',
-    scanlines: false, noise: true, noiseColor: 'rgba(16,185,129,0.03)',
-    vignette: true, vignetteColor: 'rgba(16,185,129,0.08)', fontFamily: '',
+    bg: '', text: '',
+    scanlines: false, noise: false, noiseColor: '',
+    vignette: false, vignetteColor: '', fontFamily: '',
   },
 }
 
