@@ -7,27 +7,30 @@ interface ScrollSnapProps {
   targets: string[]
   noSnapZone?: string
   enabled?: boolean
+  /** Called before navigating. Return 'block' to prevent scroll (e.g., for boot sequence) */
+  onNavigate?: (fromId: string, toId: string) => 'block' | void
 }
 
 export default function ScrollSnap({
   targets,
   noSnapZone,
   enabled = true,
+  onNavigate,
 }: ScrollSnapProps) {
   const isAnimatingRef = useRef(false)
   const cooldownRef = useRef(false)
   const [isMobile, setIsMobile] = useState(false)
   const [currentIdx, setCurrentIdx] = useState(0)
 
-  const getSnapPoints = useCallback((): number[] => {
-    const points: number[] = [0]
+  const getSnapPoints = useCallback((): { pos: number; id: string }[] => {
+    const points: { pos: number; id: string }[] = [{ pos: 0, id: 'hero' }]
 
     if (noSnapZone) {
       const zone = document.querySelector(noSnapZone) as HTMLElement
       if (zone) {
         const zoneTop = zone.offsetTop
         const zoneScrollable = zone.offsetHeight - window.innerHeight
-        points.push(zoneTop + zoneScrollable * 0.65)
+        points.push({ pos: zoneTop + zoneScrollable * 0.65, id: 'baker' })
       }
     }
 
@@ -35,23 +38,20 @@ export default function ScrollSnap({
     targets.forEach(selector => {
       const el = document.querySelector(selector) as HTMLElement
       if (el) {
-        if (mobile) {
-          points.push(el.offsetTop)
-        } else {
-          points.push(el.offsetTop - (window.innerHeight - el.offsetHeight) / 2)
-        }
+        const pos = mobile ? el.offsetTop : el.offsetTop - (window.innerHeight - el.offsetHeight) / 2
+        points.push({ pos, id: el.id || selector })
       }
     })
 
-    return points.sort((a, b) => a - b)
+    return points.sort((a, b) => a.pos - b.pos)
   }, [targets, noSnapZone])
 
-  const findCurrentIndex = useCallback((points: number[]): number => {
+  const findCurrentIndex = useCallback((points: { pos: number; id: string }[]): number => {
     const scrollY = window.scrollY
     let bestIdx = 0
     let bestDist = Infinity
     for (let i = 0; i < points.length; i++) {
-      const dist = Math.abs(scrollY - points[i])
+      const dist = Math.abs(scrollY - points[i].pos)
       if (dist < bestDist) {
         bestDist = dist
         bestIdx = i
@@ -97,7 +97,16 @@ export default function ScrollSnap({
 
     if (nextIdx === idx) return
 
-    const target = points[nextIdx]
+    const fromId = points[idx].id
+    const toId = points[nextIdx].id
+
+    // Check if navigation should be blocked (e.g., boot sequence)
+    if (onNavigate) {
+      const result = onNavigate(fromId, toId)
+      if (result === 'block') return
+    }
+
+    const target = points[nextIdx].pos
     const dist = Math.abs(target - window.scrollY)
 
     const inZone = noSnapZone && (() => {
@@ -114,7 +123,7 @@ export default function ScrollSnap({
 
     setCurrentIdx(nextIdx)
     animateTo(target, duration)
-  }, [getSnapPoints, findCurrentIndex, animateTo, noSnapZone])
+  }, [getSnapPoints, findCurrentIndex, animateTo, noSnapZone, onNavigate])
 
   useEffect(() => {
     if (!enabled) return

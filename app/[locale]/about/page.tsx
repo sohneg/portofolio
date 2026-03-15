@@ -9,6 +9,7 @@ import PageAtmosphere, { type PageAtmosphereHandle } from '@/components/PageAtmo
 import KeywordZoom from '@/components/KeywordZoom'
 import TerminalSequence from '@/components/TerminalSequence'
 import ScrollSnap from '@/components/ScrollSnap'
+import BootSequence from '@/components/BootSequence'
 
 const terminalFont = VT323({ weight: '400', subsets: ['latin'] })
 
@@ -47,6 +48,8 @@ export default function About() {
   const atmosphereRef = useRef<PageAtmosphereHandle>(null)
   const rafRef = useRef(0)
   const lastScrollYRef = useRef(-1)
+  // Boot sequence state
+  const [bootActive, setBootActive] = useState(false)
 
   useEffect(() => {
     fetch('https://api.ipify.org?format=text')
@@ -141,6 +144,7 @@ export default function About() {
         gridBgRef.current.style.transform = `translateY(${sy * -0.02}px)`
       }
 
+
       // Throttle active section calculation with rAF
       if (!rafRef.current) {
         rafRef.current = requestAnimationFrame(() => {
@@ -177,6 +181,19 @@ export default function About() {
 
   return (
     <main data-about-page className="relative transition-[background-color,color] duration-700">
+      <BootSequence
+        active={bootActive}
+        onDone={() => {
+          setBootActive(false)
+          // Scroll to terminal after boot
+          const codeEl = document.getElementById('code')
+          if (codeEl) {
+            const isMobile = window.innerWidth < 768
+            const target = isMobile ? codeEl.offsetTop : codeEl.offsetTop - (window.innerHeight - codeEl.offsetHeight) / 2
+            window.scrollTo({ top: target, behavior: 'smooth' })
+          }
+        }}
+      />
       <PageAtmosphere
         ref={atmosphereRef}
         activeSection="default"
@@ -337,6 +354,13 @@ export default function About() {
           ...sections.slice(1).map(s => `#${s.id}`),
         ]}
         noSnapZone="[data-keyword-zoom]"
+        onNavigate={(fromId, toId) => {
+          // Trigger boot sequence when navigating from wendepunkt to terminal
+          if (fromId === 'change' && toId === 'code') {
+            setBootActive(true)
+            return 'block' // prevent normal scroll, boot handles it
+          }
+        }}
       />
     </main>
   )
