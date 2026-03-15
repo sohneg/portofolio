@@ -4,7 +4,7 @@ import { Link, usePathname, useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import { useTheme } from './ThemeProvider'
 import { useEffect, useState } from 'react'
-import { Home, User, Briefcase, Mail, Sun, Moon, Globe } from 'lucide-react'
+import { Home, User, Briefcase, Mail, Sun, Moon, MoreHorizontal, X } from 'lucide-react'
 
 const navItems = [
   { href: '/' as const, icon: <Home /> },
@@ -23,6 +23,7 @@ export default function Navigation() {
   const [prevIndex, setPrevIndex] = useState(activeIndex)
   const [isAnimating, setIsAnimating] = useState(false)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     if (activeIndex !== prevIndex) {
@@ -137,84 +138,51 @@ export default function Navigation() {
         </div>
       </nav>
 
-      {/* Mobile: Unten fixiert */}
-      <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 flex bg-nav p-2 rounded-full z-50">
-        <div className="relative flex gap-2">
-          {/* Gooey container */}
-          <div className="absolute inset-0 pointer-events-none" style={{ filter: 'url(#goo)' }}>
-            {/* Current position indicator */}
-            {activeIndex !== -1 && (
-              <div
-                className="absolute w-12 h-12 bg-orange-500 rounded-full transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                style={{
-                  left: `${activeIndex * 56}px`,
-                }}
-              />
-            )}
-            {/* Hover blob - small chunk that gets pulled towards hovered item */}
-            {activeIndex !== -1 && (
-              <div
-                className={`absolute w-5 h-5 bg-orange-500 rounded-full
-                  ${hoveredIndex !== null && hoveredIndex !== activeIndex
-                    ? ''
-                    : 'transition-all duration-300'}`}
-                style={{
-                  top: '14px',
-                  left: `${activeIndex * 56 + 14 + (hoveredIndex !== null && hoveredIndex !== activeIndex
-                    ? (hoveredIndex > activeIndex ? 20 : -20)
-                    : 0)}px`,
-                  opacity: hoveredIndex !== null && hoveredIndex !== activeIndex ? 1 : 0,
-                  animation: hoveredIndex !== null && hoveredIndex !== activeIndex
-                    ? `${hoveredIndex > activeIndex ? 'blob-struggle-right' : 'blob-struggle-left'} 0.6s ease-in-out infinite`
-                    : 'none',
-                }}
-              />
-            )}
-            {/* Previous position blob for metaball stretch */}
-            {isAnimating && prevIndex !== -1 && (
-              <div
-                className="absolute w-12 h-12 bg-orange-500 rounded-full transition-all duration-200"
-                style={{
-                  left: `${prevIndex * 56}px`,
-                  opacity: 1,
-                  transform: 'scale(0.7)',
-                }}
-              />
-            )}
-          </div>
-
-          {navItems.map((item, index) => (
+      {/* Mobile: Collapsible menu bottom-right */}
+      <div className="md:hidden fixed bottom-4 right-4 z-50">
+        {/* Expanded menu */}
+        <nav
+          className={`absolute bottom-14 right-0 bg-nav rounded-2xl p-2 flex flex-col gap-1 transition-all duration-300 origin-bottom-right
+            ${mobileOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}
+        >
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              className={`relative z-10 w-12 h-12 flex items-center justify-center rounded-full transition-colors duration-300
+              onClick={() => setMobileOpen(false)}
+              className={`w-11 h-11 flex items-center justify-center rounded-full transition-colors duration-300
                 ${pathname === item.href
-                  ? 'text-white'
+                  ? 'bg-orange-500 text-white'
                   : 'hover:bg-nav-hover text-secondary'
                 }`}
             >
-              <span className="text-xl">{item.icon}</span>
+              <span className="text-lg">{item.icon}</span>
             </Link>
           ))}
-        </div>
-
-        <div className="flex gap-2 ml-2">
           <button
-            onClick={toggleLocale}
-            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all text-sm font-medium"
+            onClick={() => { toggleLocale(); setMobileOpen(false) }}
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all text-sm font-medium"
           >
             {locale.toUpperCase()}
           </button>
           <button
-            onClick={toggleTheme}
-            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all"
+            onClick={() => { toggleTheme(); setMobileOpen(false) }}
+            className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all"
           >
-            <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
+            <span className="text-lg">{theme === 'dark' ? <Sun /> : <Moon />}</span>
           </button>
-        </div>
-      </nav>
+        </nav>
+
+        {/* Toggle button */}
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="w-12 h-12 flex items-center justify-center rounded-full bg-nav shadow-lg cursor-pointer text-secondary transition-all duration-300"
+        >
+          <span className={`text-xl transition-transform duration-300 ${mobileOpen ? 'rotate-90' : ''}`}>
+            {mobileOpen ? <X /> : <MoreHorizontal />}
+          </span>
+        </button>
+      </div>
     </>
   )
 }
