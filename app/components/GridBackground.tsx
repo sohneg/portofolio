@@ -28,8 +28,9 @@ interface GridBackgroundProps {
 }
 
 const GRID_SPACING = 20
-const SEGMENT_SIZE = 4
+const SEGMENT_SIZE = 6
 const MIN_AMPLITUDE = 0.1
+const MAX_PLUCKS = 150
 
 const RAINBOW_SPOTS = [
   { px: 0.10, py: 0.20, radius: 400, r: 255, g: 23,  b: 68,  a: 0.8, fade: 0.7 },
@@ -54,11 +55,11 @@ export default function GridBackground({
   fixed = false,
   maskImage = 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)',
   style = {},
-  pluckAmplitude = 15,
-  pluckDamping = 2,
-  pluckFrequency = 6,
-  pluckRadius = 120,
-  propagationSpeed = 300,
+  pluckAmplitude = 25,
+  pluckDamping = 1.2,
+  pluckFrequency = 5,
+  pluckRadius = 150,
+  propagationSpeed = 500,
   gridSpacing = GRID_SPACING,
   spotlightRadius = 200,
 }: GridBackgroundProps) {
@@ -69,29 +70,54 @@ export default function GridBackground({
   const gridColorRef = useRef('rgba(128,128,128,0.25)')
   const sizeRef = useRef({ w: 0, h: 0, left: 0, top: 0 })
   const mouseRef = useRef({ x: -9999, y: -9999, active: false })
+  const prevMouseRef = useRef<{ x: number; y: number } | null>(null)
   const rainbowFieldRef = useRef<HTMLCanvasElement | null>(null)
 
-  const getDisplacement = useCallback(
-    (plucks: Pluck[], linePos: number, drawPos: number, now: number) => {
-      let total = 0
-      for (let i = plucks.length - 1; i >= 0; i--) {
-        const p = plucks[i]
-        if (p.linePos !== linePos) continue
-        const elapsed = (now - p.time) / 1000
-        const amp = p.amplitude * Math.sin(pluckFrequency * Math.PI * 2 * elapsed) * Math.exp(-pluckDamping * elapsed)
-        if (Math.abs(amp) < MIN_AMPLITUDE) {
-          plucks.splice(i, 1)
-          continue
-        }
-        const dist = Math.abs(drawPos - p.hitPos)
-        const spread = propagationSpeed * Math.max(elapsed, 0.05)
-        const spatial = Math.exp(-((dist * dist) / (spread * spread)))
-        total += amp * spatial
+  // Pre-compute displacement for a line, returns Float32Array of offsets
+  const computeLineDisplacements = useCallback(
+    (plucks: Pluck[], linePos: number, length: number, now: number): Float32Array | null => {
+      // Collect only plucks for this line
+      let hasPlucks = false
+      for (let i = 0; i < plucks.length; i++) {
+        if (plucks[i].linePos === linePos) { hasPlucks = true; break }
       }
-      return total
+      if (!hasPlucks) return null
+
+      const count = Math.ceil(length / SEGMENT_SIZE) + 1
+      const offsets = new Float32Array(count)
+
+      for (let si = 0; si < count; si++) {
+        const drawPos = si * SEGMENT_SIZE
+        let total = 0
+        for (let i = 0; i < plucks.length; i++) {
+          const p = plucks[i]
+          if (p.linePos !== linePos) continue
+          const elapsed = (now - p.time) / 1000
+          const amp = p.amplitude * Math.sin(pluckFrequency * Math.PI * 2 * elapsed) * Math.exp(-pluckDamping * elapsed)
+          const dist = Math.abs(drawPos - p.hitPos)
+          const spread = propagationSpeed * Math.max(elapsed, 0.05)
+          total += amp * Math.exp(-((dist * dist) / (spread * spread)))
+        }
+        offsets[si] = total
+      }
+
+      return offsets
     },
     [pluckDamping, pluckFrequency, propagationSpeed],
   )
+
+  // Prune dead plucks (batch, no splice in loop)
+  const pruneDeadPlucks = useCallback((plucks: Pluck[], now: number) => {
+    let writeIdx = 0
+    for (let i = 0; i < plucks.length; i++) {
+      const elapsed = (now - plucks[i].time) / 1000
+      const amp = Math.abs(plucks[i].amplitude * Math.exp(-pluckDamping * elapsed))
+      if (amp >= MIN_AMPLITUDE) {
+        plucks[writeIdx++] = plucks[i]
+      }
+    }
+    plucks.length = writeIdx
+  }, [pluckDamping])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -99,7 +125,6 @@ export default function GridBackground({
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Pre-render rainbow color field
     const buildRainbowField = (w: number, h: number) => {
       const fc = document.createElement('canvas')
       fc.width = Math.ceil(w)
@@ -147,14 +172,7 @@ export default function GridBackground({
     resize()
     window.addEventListener('resize', resize)
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const { left, top } = sizeRef.current
-      const x = e.clientX - left
-      const y = e.clientY - top
-      const now = performance.now()
-
-      mouseRef.current = { x, y, active: true }
-
+    const createPlucksAt = (x: number, y: number, now: number) => {
       const hPlucks = hPlucksRef.current
       const startLine = Math.max(1, Math.floor((y - pluckRadius) / gridSpacing))
       const endLine = Math.floor((y + pluckRadius) / gridSpacing)
@@ -188,42 +206,73 @@ export default function GridBackground({
           }
         }
       }
+
+      // Cap pluck count
+      if (hPlucks.length > MAX_PLUCKS) hPlucks.splice(0, hPlucks.length - MAX_PLUCKS)
+      if (vPlucks.length > MAX_PLUCKS) vPlucks.splice(0, vPlucks.length - MAX_PLUCKS)
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const { left, top } = sizeRef.current
+      const x = e.clientX - left
+      const y = e.clientY - top
+      const now = performance.now()
+
+      mouseRef.current = { x, y, active: true }
+
+      const prev = prevMouseRef.current
+      if (prev) {
+        const dx = x - prev.x
+        const dy = y - prev.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const steps = Math.max(1, Math.ceil(dist / (gridSpacing / 2)))
+        for (let s = 1; s < steps; s++) {
+          const t = s / steps
+          createPlucksAt(prev.x + dx * t, prev.y + dy * t, now)
+        }
+      }
+
+      createPlucksAt(x, y, now)
+      prevMouseRef.current = { x, y }
     }
 
     const handleMouseLeave = () => {
       mouseRef.current.active = false
+      prevMouseRef.current = null
     }
 
     window.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseleave', handleMouseLeave)
 
-    const drawDisplacedLines = (
+    // Reusable path builder from cached offsets
+    const drawPathFromOffsets = (
       target: CanvasRenderingContext2D,
-      w: number, h: number, now: number,
+      offsets: Float32Array | null,
+      linePos: number,
+      length: number,
+      isHorizontal: boolean,
     ) => {
-      const hLines = Math.floor(h / gridSpacing)
-      for (let i = 1; i <= hLines; i++) {
-        const lineY = i * gridSpacing
-        target.beginPath()
-        target.moveTo(0, lineY)
-        for (let x = SEGMENT_SIZE; x <= w; x += SEGMENT_SIZE) {
-          const dy = getDisplacement(hPlucksRef.current, lineY, x, now)
-          target.lineTo(x, lineY + dy)
+      target.beginPath()
+      if (isHorizontal) {
+        target.moveTo(0, linePos)
+        if (offsets) {
+          for (let si = 1; si < offsets.length; si++) {
+            target.lineTo(si * SEGMENT_SIZE, linePos + offsets[si])
+          }
+        } else {
+          target.lineTo(length, linePos)
         }
-        target.stroke()
-      }
-
-      const vLines = Math.floor(w / gridSpacing)
-      for (let i = 1; i <= vLines; i++) {
-        const lineX = i * gridSpacing
-        target.beginPath()
-        target.moveTo(lineX, 0)
-        for (let y = SEGMENT_SIZE; y <= h; y += SEGMENT_SIZE) {
-          const dx = getDisplacement(vPlucksRef.current, lineX, y, now)
-          target.lineTo(lineX + dx, y)
+      } else {
+        target.moveTo(linePos, 0)
+        if (offsets) {
+          for (let si = 1; si < offsets.length; si++) {
+            target.lineTo(linePos + offsets[si], si * SEGMENT_SIZE)
+          }
+        } else {
+          target.lineTo(linePos, length)
         }
-        target.stroke()
       }
+      target.stroke()
     }
 
     const draw = () => {
@@ -231,43 +280,78 @@ export default function GridBackground({
       const now = performance.now()
       const mouse = mouseRef.current
 
+      // Prune dead plucks once per frame
+      pruneDeadPlucks(hPlucksRef.current, now)
+      pruneDeadPlucks(vPlucksRef.current, now)
+
       ctx.clearRect(0, 0, w, h)
 
-      // 1) Base grid (gray lines with displacement)
+      const hLines = Math.floor(h / gridSpacing)
+      const vLines = Math.floor(w / gridSpacing)
+
+      // Pre-compute all displacements once
+      const hOffsets: (Float32Array | null)[] = new Array(hLines + 1)
+      for (let i = 1; i <= hLines; i++) {
+        hOffsets[i] = computeLineDisplacements(hPlucksRef.current, i * gridSpacing, w, now)
+      }
+      const vOffsets: (Float32Array | null)[] = new Array(vLines + 1)
+      for (let i = 1; i <= vLines; i++) {
+        vOffsets[i] = computeLineDisplacements(vPlucksRef.current, i * gridSpacing, h, now)
+      }
+
+      // 1) Base grid
       ctx.strokeStyle = gridColorRef.current
       ctx.lineWidth = 1
-      drawDisplacedLines(ctx, w, h, now)
+      for (let i = 1; i <= hLines; i++) {
+        drawPathFromOffsets(ctx, hOffsets[i], i * gridSpacing, w, true)
+      }
+      for (let i = 1; i <= vLines; i++) {
+        drawPathFromOffsets(ctx, vOffsets[i], i * gridSpacing, h, false)
+      }
 
-      // 2) Rainbow spotlight (colored lines with same displacement, clipped to mouse circle)
+      // 2) Rainbow spotlight - only lines near mouse
       if (mouse.active && rainbowFieldRef.current) {
         const sr = spotlightRadius
-
-        ctx.save()
-
-        // Clip to circular spotlight around mouse
-        ctx.beginPath()
-        ctx.arc(mouse.x, mouse.y, sr, 0, Math.PI * 2)
-        ctx.clip()
-
-        // Use rainbow field as pattern for stroke
         const pattern = ctx.createPattern(rainbowFieldRef.current, 'no-repeat')
         if (pattern) {
-          // Glow pass
+          ctx.save()
+          ctx.beginPath()
+          ctx.arc(mouse.x, mouse.y, sr, 0, Math.PI * 2)
+          ctx.clip()
+
           ctx.strokeStyle = pattern
+
+          // Glow
           ctx.lineWidth = 2
           ctx.shadowBlur = 6
           ctx.shadowColor = 'rgba(255,255,255,0.3)'
           ctx.globalAlpha = 0.35
-          drawDisplacedLines(ctx, w, h, now)
 
-          // Sharp pass
+          // Only draw lines within spotlight range
+          const hMin = Math.max(1, Math.floor((mouse.y - sr) / gridSpacing))
+          const hMax = Math.min(hLines, Math.ceil((mouse.y + sr) / gridSpacing))
+          for (let i = hMin; i <= hMax; i++) {
+            drawPathFromOffsets(ctx, hOffsets[i], i * gridSpacing, w, true)
+          }
+          const vMin = Math.max(1, Math.floor((mouse.x - sr) / gridSpacing))
+          const vMax = Math.min(vLines, Math.ceil((mouse.x + sr) / gridSpacing))
+          for (let i = vMin; i <= vMax; i++) {
+            drawPathFromOffsets(ctx, vOffsets[i], i * gridSpacing, h, false)
+          }
+
+          // Sharp
           ctx.shadowBlur = 0
           ctx.lineWidth = 1
           ctx.globalAlpha = 0.5
-          drawDisplacedLines(ctx, w, h, now)
-        }
+          for (let i = hMin; i <= hMax; i++) {
+            drawPathFromOffsets(ctx, hOffsets[i], i * gridSpacing, w, true)
+          }
+          for (let i = vMin; i <= vMax; i++) {
+            drawPathFromOffsets(ctx, vOffsets[i], i * gridSpacing, h, false)
+          }
 
-        ctx.restore()
+          ctx.restore()
+        }
       }
 
       rafRef.current = requestAnimationFrame(draw)
@@ -282,7 +366,7 @@ export default function GridBackground({
       document.removeEventListener('mouseleave', handleMouseLeave)
       themeObserver.disconnect()
     }
-  }, [pluckAmplitude, pluckRadius, gridSpacing, spotlightRadius, getDisplacement])
+  }, [pluckAmplitude, pluckRadius, gridSpacing, spotlightRadius, computeLineDisplacements, pruneDeadPlucks])
 
   const positionClass = fixed ? 'fixed' : 'absolute'
 
