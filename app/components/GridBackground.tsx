@@ -60,13 +60,17 @@ export default function GridBackground({
   const positionClass = fixed ? 'fixed' : 'absolute'
 
   const rainbow = `
-    radial-gradient(ellipse at 15% 50%, #ff1744 0%, transparent 50%),
-    radial-gradient(ellipse at 85% 15%, #00e5ff 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 85%, #00e676 0%, transparent 50%),
-    radial-gradient(ellipse at 25% 10%, #ffea00 0%, transparent 50%),
-    radial-gradient(ellipse at 75% 70%, #d500f9 0%, transparent 50%),
-    radial-gradient(ellipse at 10% 80%, #2979ff 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 40%, #ff9100 0%, transparent 50%)`
+    radial-gradient(circle 400px at 10% 20%, rgba(255,23,68,0.8) 0%, transparent 70%),
+    radial-gradient(circle 300px at 90% 10%, rgba(0,229,255,0.7) 0%, transparent 70%),
+    radial-gradient(circle 500px at 60% 90%, rgba(0,230,118,0.7) 0%, transparent 70%),
+    radial-gradient(circle 250px at 30% 60%, rgba(255,234,0,0.6) 0%, transparent 60%),
+    radial-gradient(circle 350px at 80% 55%, rgba(213,0,249,0.7) 0%, transparent 70%),
+    radial-gradient(circle 450px at 5% 85%, rgba(41,121,255,0.8) 0%, transparent 70%),
+    radial-gradient(circle 300px at 50% 30%, rgba(255,145,0,0.6) 0%, transparent 60%),
+    radial-gradient(circle 200px at 70% 15%, rgba(255,23,68,0.5) 0%, transparent 65%),
+    radial-gradient(circle 350px at 40% 45%, rgba(0,229,255,0.4) 0%, transparent 70%),
+    radial-gradient(circle 280px at 20% 95%, rgba(213,0,249,0.5) 0%, transparent 65%),
+    radial-gradient(circle 320px at 95% 80%, rgba(0,230,118,0.6) 0%, transparent 70%)`
 
   const spotlightMask = `radial-gradient(circle 200px at var(--mx, -200px) var(--my, -200px), black 0%, transparent 100%)`
 
