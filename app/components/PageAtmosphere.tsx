@@ -1,7 +1,11 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { useTheme } from './ThemeProvider'
+
+export interface PageAtmosphereHandle {
+  update: (activeSection: string, nextSection: string, transitionProgress: number) => void
+}
 
 interface Atmosphere {
   bg: string
@@ -142,97 +146,155 @@ interface PageAtmosphereProps {
   nextSection: string
 }
 
-export default function PageAtmosphere({
-  activeSection,
-  transitionProgress,
-  nextSection,
-}: PageAtmosphereProps) {
+export default forwardRef<PageAtmosphereHandle, PageAtmosphereProps>(function PageAtmosphere(
+  { activeSection: initialActive, transitionProgress: initialProgress, nextSection: initialNext },
+  ref,
+) {
   const { theme } = useTheme()
-  const atmos = theme === 'dark' ? darkAtmospheres : lightAtmospheres
+  // Refs for direct DOM manipulation - no re-renders on scroll
+  const containerRef = useRef<HTMLDivElement>(null)
+  const scanlinesRef = useRef<HTMLDivElement>(null)
+  const noiseRef = useRef<HTMLDivElement>(null)
+  const vignetteRef = useRef<HTMLDivElement>(null)
+  const crtCurvatureRef = useRef<HTMLDivElement>(null)
+  const mainElRef = useRef<HTMLElement | null>(null)
 
-  const current = atmos[activeSection] || atmos.default
-  const next = atmos[nextSection] || atmos.default
-  const t = smoothstep(Math.max(0, Math.min(1, transitionProgress)))
+  // Cache last computed values to skip redundant DOM writes
+  const lastValuesRef = useRef({ activeSection: '', nextSection: '', transitionProgress: -1, theme: '' })
 
-  const interpolated = useMemo(() => {
+  const applyAtmosphere = useCallback((activeSection: string, nextSection: string, transitionProgress: number) => {
+    const currentTheme = theme
+    const last = lastValuesRef.current
+    // Skip if nothing changed
+    if (
+      last.activeSection === activeSection &&
+      last.nextSection === nextSection &&
+      last.transitionProgress === transitionProgress &&
+      last.theme === currentTheme
+    ) return
+    last.activeSection = activeSection
+    last.nextSection = nextSection
+    last.transitionProgress = transitionProgress
+    last.theme = currentTheme
+
+    const atmos = currentTheme === 'dark' ? darkAtmospheres : lightAtmospheres
+    const current = atmos[activeSection] || atmos.default
+    const next = atmos[nextSection] || atmos.default
+    const t = smoothstep(Math.max(0, Math.min(1, transitionProgress)))
+
+    // Interpolate values
     const bg = current.bg && next.bg
       ? lerpColor(current.bg, next.bg, t)
       : t > 0.5 ? next.bg : current.bg
-    const text = current.text && next.text
-      ? lerpColor(current.text, next.text, t)
-      : t > 0.5 ? next.text : current.text
+    const showScanlines = t > 0.5 ? next.scanlines : current.scanlines
+    const showNoise = t > 0.3 ? next.noise : current.noise
+    const noiseColor = t > 0.5 ? next.noiseColor : current.noiseColor
+    const showVignette = current.vignette || next.vignette
+    const vignetteColor = t > 0.5 ? next.vignetteColor : current.vignetteColor
 
-    return {
-      bg, text,
-      scanlines: t > 0.5 ? next.scanlines : current.scanlines,
-      noise: t > 0.3 ? next.noise : current.noise,
-      noiseColor: t > 0.5 ? next.noiseColor : current.noiseColor,
-      vignette: current.vignette || next.vignette,
-      vignetteColor: t > 0.5 ? next.vignetteColor : current.vignetteColor,
-      fontFamily: t > 0.5 ? next.fontFamily : current.fontFamily,
+    // Apply background to main element
+    if (!mainElRef.current) {
+      mainElRef.current = document.querySelector('[data-about-page]') as HTMLElement
     }
-  }, [current, next, t])
+    if (mainElRef.current) {
+      mainElRef.current.style.backgroundColor = bg || ''
+    }
 
+    // Scanlines
+    if (scanlinesRef.current) {
+      if (showScanlines) {
+        scanlinesRef.current.style.display = ''
+        scanlinesRef.current.style.opacity = String(t > 0.5 ? 1 : t * 2)
+      } else {
+        scanlinesRef.current.style.display = 'none'
+      }
+    }
+
+    // Noise
+    if (noiseRef.current) {
+      if (showNoise && noiseColor) {
+        noiseRef.current.style.display = ''
+      } else {
+        noiseRef.current.style.display = 'none'
+      }
+    }
+
+    // Vignette
+    if (vignetteRef.current) {
+      if (showVignette && vignetteColor) {
+        vignetteRef.current.style.display = ''
+        vignetteRef.current.style.background = `radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, ${vignetteColor} 100%)`
+      } else {
+        vignetteRef.current.style.display = 'none'
+      }
+    }
+
+    // CRT curvature
+    if (crtCurvatureRef.current) {
+      if (showScanlines) {
+        crtCurvatureRef.current.style.display = ''
+        crtCurvatureRef.current.style.opacity = String(t > 0.5 ? 1 : t * 2)
+      } else {
+        crtCurvatureRef.current.style.display = 'none'
+      }
+    }
+  }, [theme])
+
+  // Expose imperative update method
+  useImperativeHandle(ref, () => ({
+    update: applyAtmosphere,
+  }), [applyAtmosphere])
+
+  // Apply initial state
   useEffect(() => {
-    const main = document.querySelector('[data-about-page]') as HTMLElement
-    if (!main) return
-
-    if (interpolated.bg) {
-      main.style.backgroundColor = interpolated.bg
-    } else {
-      main.style.backgroundColor = ''
-    }
-
+    applyAtmosphere(initialActive, initialNext, initialProgress)
     return () => {
-      main.style.backgroundColor = ''
+      if (mainElRef.current) {
+        mainElRef.current.style.backgroundColor = ''
+      }
     }
-  }, [interpolated])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[0]" aria-hidden="true">
-      {/* CRT Scanlines */}
-      {interpolated.scanlines && (
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,65,0.03) 1px, rgba(0,255,65,0.03) 2px)',
-            opacity: t > 0.5 ? 1 : t * 2,
-          }}
-        />
-      )}
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[0]" aria-hidden="true">
+      {/* CRT Scanlines - always rendered, toggled via display */}
+      <div
+        ref={scanlinesRef}
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,65,0.03) 1px, rgba(0,255,65,0.03) 2px)',
+          display: 'none',
+        }}
+      />
 
       {/* Noise / paper texture */}
-      {interpolated.noise && interpolated.noiseColor && (
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`,
-            opacity: 0.5,
-          }}
-        />
-      )}
+      <div
+        ref={noiseRef}
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`,
+          opacity: 0.5,
+          display: 'none',
+        }}
+      />
 
       {/* Vignette */}
-      {interpolated.vignette && interpolated.vignetteColor && (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, ${interpolated.vignetteColor} 100%)`,
-          }}
-        />
-      )}
+      <div
+        ref={vignetteRef}
+        className="absolute inset-0"
+        style={{ display: 'none' }}
+      />
 
       {/* CRT screen curvature */}
-      {interpolated.scanlines && (
-        <div
-          className="absolute inset-0"
-          style={{
-            boxShadow: 'inset 0 0 120px rgba(0,0,0,0.7)',
-            borderRadius: '8px',
-            opacity: t > 0.5 ? 1 : t * 2,
-          }}
-        />
-      )}
+      <div
+        ref={crtCurvatureRef}
+        className="absolute inset-0"
+        style={{
+          boxShadow: 'inset 0 0 120px rgba(0,0,0,0.7)',
+          borderRadius: '8px',
+          display: 'none',
+        }}
+      />
     </div>
   )
-}
+})

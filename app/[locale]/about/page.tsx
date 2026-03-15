@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Circle, ArrowRight, Code, Briefcase, Car, Dices, Server, Smile } from 'lucide-react'
 import { VT323 } from 'next/font/google'
 import GridBackground from '@/components/GridBackground'
-import PageAtmosphere from '@/components/PageAtmosphere'
+import PageAtmosphere, { type PageAtmosphereHandle } from '@/components/PageAtmosphere'
 import KeywordZoom from '@/components/KeywordZoom'
 import TerminalSequence from '@/components/TerminalSequence'
 
@@ -31,12 +31,21 @@ const sections: Section[] = [
 
 export default function About() {
   const t = useTranslations('about')
-  const [scrollY, setScrollY] = useState(0)
+  // Use refs instead of state for scroll-driven values to avoid re-renders
+  const scrollYRef = useRef(0)
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
-  const [activeSectionIdx, setActiveSectionIdx] = useState(-1)
-  const [transitionProgress, setTransitionProgress] = useState(0)
+  const activeSectionIdxRef = useRef(-1)
+  const transitionProgressRef = useRef(0)
   const [visitorIp, setVisitorIp] = useState('')
+  // Refs for direct DOM manipulation of scroll-driven elements
+  const heroRef = useRef<HTMLDivElement>(null)
+  const scrollHintRef = useRef<HTMLDivElement>(null)
+  const gridBgRef = useRef<HTMLDivElement>(null)
+  // Ref for PageAtmosphere imperative updates
+  const atmosphereRef = useRef<PageAtmosphereHandle>(null)
+  const rafRef = useRef(0)
+  const lastScrollYRef = useRef(-1)
 
   useEffect(() => {
     fetch('https://api.ipify.org?format=text')
@@ -46,6 +55,7 @@ export default function About() {
   }, [])
 
   const updateActiveSection = useCallback(() => {
+    const scrollY = scrollYRef.current
     const viewportCenter = scrollY + window.innerHeight * 0.45
 
     let bestIdx = -1
@@ -57,8 +67,9 @@ export default function About() {
       const firstTop = firstRef.getBoundingClientRect().top + window.scrollY
       if (viewportCenter < firstTop) {
         // Still in hero - no atmosphere
-        setActiveSectionIdx(-1)
-        setTransitionProgress(0)
+        activeSectionIdxRef.current = -1
+        transitionProgressRef.current = 0
+        atmosphereRef.current?.update('default', 'default', 0)
         return
       }
     }
@@ -74,8 +85,9 @@ export default function About() {
       }
     })
 
-    setActiveSectionIdx(bestIdx)
+    activeSectionIdxRef.current = bestIdx
 
+    let transitionProgress = 0
     if (bestIdx >= 0 && bestIdx < sections.length - 1) {
       const currentRef = sectionRefs.current[bestIdx]
       const nextRef = sectionRefs.current[bestIdx + 1]
@@ -86,7 +98,6 @@ export default function About() {
         const rawProgress = range > 0 ? (viewportCenter - currentCenter) / range : 0
 
         // Deadzone: atmosphere stays stable for the middle 60% of each section
-        // Only transitions in the last 20% → first 20% between sections
         const deadStart = 0.4
         const deadEnd = 0.6
         let mapped: number
@@ -97,15 +108,46 @@ export default function About() {
         } else {
           mapped = 0
         }
-        setTransitionProgress(Math.max(0, Math.min(1, mapped)))
+        transitionProgress = Math.max(0, Math.min(1, mapped))
       }
-    } else {
-      setTransitionProgress(0)
     }
-  }, [scrollY])
+    transitionProgressRef.current = transitionProgress
+
+    // Update atmosphere via imperative handle (no state, no re-render)
+    const activeId = bestIdx >= 0 ? sections[bestIdx].id : 'default'
+    const nextId = bestIdx >= 0 && bestIdx < sections.length - 1
+      ? sections[bestIdx + 1].id
+      : activeId
+    atmosphereRef.current?.update(activeId, nextId, transitionProgress)
+  }, [])
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
+    const onScroll = () => {
+      const sy = window.scrollY
+      // Skip if scroll position hasn't changed
+      if (sy === lastScrollYRef.current) return
+      lastScrollYRef.current = sy
+      scrollYRef.current = sy
+
+      // Direct DOM updates for scroll-driven elements (no React state)
+      if (heroRef.current) {
+        heroRef.current.style.opacity = String(Math.max(0, 1 - sy / 300))
+      }
+      if (scrollHintRef.current) {
+        scrollHintRef.current.style.opacity = String(Math.max(0, 1 - sy / 200))
+      }
+      if (gridBgRef.current) {
+        gridBgRef.current.style.transform = `translateY(${sy * -0.02}px)`
+      }
+
+      // Throttle active section calculation with rAF
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(() => {
+          updateActiveSection()
+          rafRef.current = 0
+        })
+      }
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -122,28 +164,23 @@ export default function About() {
       if (ref) observer.observe(ref)
     })
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    // Initial call
+    onScroll()
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', onScroll)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
       observer.disconnect()
     }
-  }, [])
-
-  useEffect(() => {
-    updateActiveSection()
   }, [updateActiveSection])
-
-  const activeId = activeSectionIdx >= 0 ? sections[activeSectionIdx].id : 'default'
-  const nextId = activeSectionIdx >= 0 && activeSectionIdx < sections.length - 1
-    ? sections[activeSectionIdx + 1].id
-    : activeId
 
   return (
     <main data-about-page className="relative transition-[background-color,color] duration-700">
       <PageAtmosphere
-        activeSection={activeId}
-        transitionProgress={transitionProgress}
-        nextSection={nextId}
+        ref={atmosphereRef}
+        activeSection="default"
+        transitionProgress={0}
+        nextSection="default"
       />
 
       <GridBackground
@@ -153,7 +190,7 @@ export default function About() {
         filterSlope={2.5}
         filterIntercept={-0.6}
         fixed
-        style={{ transform: `translateY(${scrollY * -0.02}px)` }}
+        style={{ transform: `translateY(${scrollYRef.current * -0.02}px)` }}
       />
 
       {/* Hero + 3D keyword zoom combined */}
@@ -173,8 +210,9 @@ export default function About() {
       >
         {/* Hero content floats on top, fades out as you scroll */}
         <div
+          ref={heroRef}
           className="absolute inset-0 flex flex-col justify-center items-center px-8 md:pl-24 z-10 pointer-events-none"
-          style={{ opacity: Math.max(0, 1 - scrollY / 300) }}
+          style={{ willChange: 'opacity' }}
         >
           <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-bold mb-6">{t('title')}</h1>
@@ -182,8 +220,9 @@ export default function About() {
           </div>
 
           <div
+            ref={scrollHintRef}
             className="absolute bottom-12 flex flex-col items-center gap-2 animate-bounce"
-            style={{ opacity: Math.max(0, 1 - scrollY / 200) }}
+            style={{ willChange: 'opacity' }}
           >
             <span className="text-sm opacity-50">{t('scrollHint')}</span>
             <div className="w-6 h-10 border-2 border-current opacity-30 rounded-full flex justify-center pt-2">

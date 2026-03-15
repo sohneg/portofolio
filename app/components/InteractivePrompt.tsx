@@ -147,8 +147,11 @@ export default function InteractivePrompt({ onClear, storyText }: { onClear?: ()
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Don't auto-focus on mobile - let users discover the terminal
   useEffect(() => {
-    inputRef.current?.focus()
+    if (window.innerWidth > 768) {
+      inputRef.current?.focus()
+    }
   }, [])
 
   // Scroll the terminal overlay container to bottom

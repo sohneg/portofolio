@@ -45,10 +45,27 @@ const items: KW[] = [
   { text: 'Pomsky', row: 3, col: 2, start: 0.43, duration: 0.08 },
 ]
 
-interface CharScatter {
+interface ScatterUnit {
   dx: number
   dy: number
   rotation: number
+}
+
+/** Split text into words (preserving spaces as part of the preceding word) for mobile,
+ *  or characters for desktop. Returns array of token strings. */
+function splitForScatter(text: string, isMobile: boolean): string[] {
+  if (!text) return []
+  if (!isMobile) return text.split('')
+  // Word-level: split on spaces but keep spaces attached to previous token
+  return text.split(/(?<=\s)|(?=\S+)/).filter(Boolean).reduce<string[]>((acc, token) => {
+    // Merge consecutive whitespace tokens into a single space
+    if (/^\s+$/.test(token) && acc.length > 0) {
+      acc[acc.length - 1] += token
+    } else {
+      acc.push(token)
+    }
+    return acc
+  }, [])
 }
 
 interface KeywordZoomProps {
@@ -67,6 +84,12 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
   const flyInElRef = useRef<HTMLDivElement>(null)
   const breadRefs = useRef<(HTMLDivElement | null)[]>([])
+  const lastPRef = useRef(-1) // track last scroll progress to skip redundant frames
+
+  // Detect mobile once on mount
+  const [isMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768
+  )
 
   // 3 breads thrown from bottom-left in an arc through the text
   const breads = useMemo(() => [
@@ -79,28 +102,34 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
   const crumbRefs = useRef<(HTMLDivElement | null)[]>([])
   const [breadImgs, setBreadImgs] = useState<(string | null)[]>([null, null, null])
 
-  // Generate scatter data for each character
-  const titleScatter = useMemo<CharScatter[]>(() =>
-    (flyInTitle || '').split('').map(() => ({
+  // Split text into scatter tokens (words on mobile, chars on desktop)
+  const titleTokens = useMemo(() => splitForScatter(flyInTitle || '', isMobile), [flyInTitle, isMobile])
+  const textTokens = useMemo(() => splitForScatter(flyInText || '', isMobile), [flyInText, isMobile])
+
+  // Generate scatter data per token (much fewer on mobile)
+  const titleScatter = useMemo<ScatterUnit[]>(() =>
+    titleTokens.map(() => ({
       dx: (Math.random() - 0.5) * 900,
       dy: (Math.random() - 0.5) * 700,
       rotation: (Math.random() - 0.5) * 720,
-    })), [flyInTitle])
+    })), [titleTokens])
 
-  const textScatter = useMemo<CharScatter[]>(() =>
-    (flyInText || '').split('').map(() => ({
+  const textScatter = useMemo<ScatterUnit[]>(() =>
+    textTokens.map(() => ({
       dx: (Math.random() - 0.5) * 900,
       dy: (Math.random() - 0.5) * 700,
       rotation: (Math.random() - 0.5) * 720,
-    })), [flyInText])
+    })), [textTokens])
 
+  // Fewer crumbs on mobile
+  const crumbCount = isMobile ? 8 : 15
   const crumbs = useMemo(() =>
-    Array.from({ length: 15 }, () => ({
+    Array.from({ length: crumbCount }, () => ({
       dx: (Math.random() - 0.5) * 500,
       dy: (Math.random() - 0.3) * 400,
       size: 3 + Math.random() * 8,
       rotation: Math.random() * 360,
-    })), [])
+    })), [crumbCount])
 
   // Check for bread images
   useEffect(() => {
@@ -132,6 +161,14 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       }
 
       const p = Math.max(0, Math.min(1, -rect.top / scrollable))
+
+      // Skip frame if progress hasn't meaningfully changed (reduces work on mobile)
+      const pRounded = Math.round(p * 10000) / 10000
+      if (pRounded === lastPRef.current) {
+        rafRef.current = requestAnimationFrame(update)
+        return
+      }
+      lastPRef.current = pRounded
 
       // === PHASE 1: Keywords (0 - 0.5) ===
       itemRefs.current.forEach((el, i) => {
@@ -340,7 +377,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
           >
             <div className="max-w-2xl mx-auto text-center font-serif">
               <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                {flyInTitle.split('').map((c, i) => (
+                {titleTokens.map((token, i) => (
                   <span
                     key={i}
                     data-scatter
@@ -348,13 +385,14 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
                     data-dy={titleScatter[i]?.dy || 0}
                     data-rot={titleScatter[i]?.rotation || 0}
                     className="inline-block"
+                    style={{ willChange: 'transform' }}
                   >
-                    {c === ' ' ? '\u00A0' : c}
+                    {token.replace(/ /g, '\u00A0')}
                   </span>
                 ))}
               </h2>
               <p className="text-lg md:text-xl leading-relaxed opacity-80">
-                {flyInText.split('').map((c, i) => (
+                {textTokens.map((token, i) => (
                   <span
                     key={i}
                     data-scatter
@@ -362,8 +400,9 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
                     data-dy={textScatter[i]?.dy || 0}
                     data-rot={textScatter[i]?.rotation || 0}
                     className="inline-block"
+                    style={{ willChange: 'transform' }}
                   >
-                    {c === ' ' ? '\u00A0' : c}
+                    {token.replace(/ /g, '\u00A0')}
                   </span>
                 ))}
               </p>
