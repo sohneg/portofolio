@@ -41,15 +41,20 @@ const darkAtmospheres: Record<string, Atmosphere> = {
     scanlines: false, noise: false, noiseColor: '',
     vignette: false, vignetteColor: '', fontFamily: '',
   },
-  side: {
+  tuning: {
+    bg: '#1a0a0a', text: '#f0c0c0',
+    scanlines: false, noise: true, noiseColor: 'rgba(200,50,50,0.03)',
+    vignette: true, vignetteColor: 'rgba(20,5,5,0.5)', fontFamily: '',
+  },
+  dice: {
+    bg: '#1a0f20', text: '#d4b8e8',
+    scanlines: false, noise: true, noiseColor: 'rgba(150,80,200,0.03)',
+    vignette: true, vignetteColor: 'rgba(15,5,25,0.5)', fontFamily: '',
+  },
+  infra: {
     bg: '#0a1628', text: '#bfdbfe',
     scanlines: false, noise: true, noiseColor: 'rgba(59,130,246,0.02)',
     vignette: true, vignetteColor: 'rgba(5,10,30,0.5)', fontFamily: '',
-  },
-  passion: {
-    bg: '#1a0f08', text: '#fde68a',
-    scanlines: false, noise: false, noiseColor: '',
-    vignette: true, vignetteColor: 'rgba(249,115,22,0.15)', fontFamily: '',
   },
   life: {
     bg: '#0b1a12', text: '#d1fae5',
@@ -85,15 +90,20 @@ const lightAtmospheres: Record<string, Atmosphere> = {
     scanlines: false, noise: false, noiseColor: '',
     vignette: false, vignetteColor: '', fontFamily: '',
   },
-  side: {
+  tuning: {
+    bg: '#fef2f2', text: '#7f1d1d',
+    scanlines: false, noise: true, noiseColor: 'rgba(200,50,50,0.03)',
+    vignette: true, vignetteColor: 'rgba(200,50,50,0.08)', fontFamily: '',
+  },
+  dice: {
+    bg: '#f5f0ff', text: '#3b1f6e',
+    scanlines: false, noise: true, noiseColor: 'rgba(130,80,200,0.03)',
+    vignette: true, vignetteColor: 'rgba(130,80,200,0.08)', fontFamily: '',
+  },
+  infra: {
     bg: '#eff6ff', text: '#1e3a5f',
     scanlines: false, noise: true, noiseColor: 'rgba(59,130,246,0.03)',
     vignette: true, vignetteColor: 'rgba(59,130,246,0.08)', fontFamily: '',
-  },
-  passion: {
-    bg: '#fff7ed', text: '#7c2d12',
-    scanlines: false, noise: false, noiseColor: '',
-    vignette: true, vignetteColor: 'rgba(249,115,22,0.1)', fontFamily: '',
   },
   life: {
     bg: '#ecfdf5', text: '#064e3b',
@@ -172,24 +182,9 @@ export default function PageAtmosphere({
     } else {
       main.style.backgroundColor = ''
     }
-    if (interpolated.text) {
-      main.style.color = interpolated.text
-    } else {
-      main.style.color = ''
-    }
-
-    if (interpolated.fontFamily === 'mono') {
-      main.style.fontFamily = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace'
-    } else if (interpolated.fontFamily === 'serif') {
-      main.style.fontFamily = 'Georgia, "Times New Roman", serif'
-    } else {
-      main.style.fontFamily = ''
-    }
 
     return () => {
       main.style.backgroundColor = ''
-      main.style.color = ''
-      main.style.fontFamily = ''
     }
   }, [interpolated])
 

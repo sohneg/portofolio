@@ -2,9 +2,14 @@
 
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Circle, ArrowRight, Code, Briefcase, Rocket, Heart, Smile } from 'lucide-react'
+import { Circle, ArrowRight, Code, Briefcase, Car, Dices, Server, Smile } from 'lucide-react'
+import { VT323 } from 'next/font/google'
 import GridBackground from '@/components/GridBackground'
 import PageAtmosphere from '@/components/PageAtmosphere'
+import KeywordZoom from '@/components/KeywordZoom'
+import TerminalSequence from '@/components/TerminalSequence'
+
+const terminalFont = VT323({ weight: '400', subsets: ['latin'] })
 
 interface Section {
   id: string
@@ -18,9 +23,10 @@ const sections: Section[] = [
   { id: 'change', icon: <ArrowRight />, titleKey: 'chapter2Title', textKey: 'chapter2Text' },
   { id: 'code', icon: <Code />, titleKey: 'chapter3Title', textKey: 'chapter3Text' },
   { id: 'work', icon: <Briefcase />, titleKey: 'chapter4Title', textKey: 'chapter4Text' },
-  { id: 'side', icon: <Rocket />, titleKey: 'chapter5Title', textKey: 'chapter5Text' },
-  { id: 'passion', icon: <Heart />, titleKey: 'chapter6Title', textKey: 'chapter6Text' },
-  { id: 'life', icon: <Smile />, titleKey: 'chapter7Title', textKey: 'chapter7Text' },
+  { id: 'tuning', icon: <Car />, titleKey: 'chapter5Title', textKey: 'chapter5Text' },
+  { id: 'dice', icon: <Dices />, titleKey: 'chapter6Title', textKey: 'chapter6Text' },
+  { id: 'infra', icon: <Server />, titleKey: 'chapter7Title', textKey: 'chapter7Text' },
+  { id: 'life', icon: <Smile />, titleKey: 'chapter8Title', textKey: 'chapter8Text' },
 ]
 
 export default function About() {
@@ -30,6 +36,14 @@ export default function About() {
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
   const [activeSectionIdx, setActiveSectionIdx] = useState(-1)
   const [transitionProgress, setTransitionProgress] = useState(0)
+  const [visitorIp, setVisitorIp] = useState('')
+
+  useEffect(() => {
+    fetch('https://api.ipify.org?format=text')
+      .then(r => r.text())
+      .then(ip => setVisitorIp(ip))
+      .catch(() => {})
+  }, [])
 
   const updateActiveSection = useCallback(() => {
     const viewportCenter = scrollY + window.innerHeight * 0.45
@@ -125,7 +139,7 @@ export default function About() {
     : activeId
 
   return (
-    <main data-about-page className="relative overflow-hidden transition-[background-color,color] duration-700">
+    <main data-about-page className="relative transition-[background-color,color] duration-700">
       <PageAtmosphere
         activeSection={activeId}
         transitionProgress={transitionProgress}
@@ -142,51 +156,65 @@ export default function About() {
         style={{ transform: `translateY(${scrollY * -0.02}px)` }}
       />
 
-      {/* Hero - normal site theme */}
-      <section className="min-h-screen flex flex-col justify-center items-center relative px-8 md:pl-24 z-[2]">
+      {/* Hero + 3D keyword zoom combined */}
+      <KeywordZoom
+        flyInContent={
+          <div className="font-serif">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-8">
+              <Circle />
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">{t('chapter1Title')}</h2>
+            <p className="text-lg md:text-xl leading-relaxed opacity-80">{t('chapter1Text')}</p>
+          </div>
+        }
+        flyInRef={(el) => { sectionRefs.current[0] = el }}
+      >
+        {/* Hero content floats on top, fades out as you scroll */}
         <div
-          className="text-center"
-          style={{ transform: `translateY(${scrollY * 0.4}px)`, opacity: Math.max(0, 1 - scrollY / 400) }}
+          className="absolute inset-0 flex flex-col justify-center items-center px-8 md:pl-24 z-10 pointer-events-none"
+          style={{ opacity: Math.max(0, 1 - scrollY / 300) }}
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">{t('title')}</h1>
-          <p className="text-xl opacity-70 max-w-lg mx-auto">{t('subtitle')}</p>
-        </div>
+          <div className="text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">{t('title')}</h1>
+            <p className="text-xl opacity-70 max-w-lg mx-auto">{t('subtitle')}</p>
+          </div>
 
-        <div
-          className="absolute bottom-12 flex flex-col items-center gap-2 animate-bounce"
-          style={{ opacity: Math.max(0, 1 - scrollY / 200) }}
-        >
-          <span className="text-sm opacity-50">{t('scrollHint')}</span>
-          <div className="w-6 h-10 border-2 border-current opacity-30 rounded-full flex justify-center pt-2">
-            <div className="w-1.5 h-3 bg-current opacity-50 rounded-full animate-pulse" />
+          <div
+            className="absolute bottom-12 flex flex-col items-center gap-2 animate-bounce"
+            style={{ opacity: Math.max(0, 1 - scrollY / 200) }}
+          >
+            <span className="text-sm opacity-50">{t('scrollHint')}</span>
+            <div className="w-6 h-10 border-2 border-current opacity-30 rounded-full flex justify-center pt-2">
+              <div className="w-1.5 h-3 bg-current opacity-50 rounded-full animate-pulse" />
+            </div>
           </div>
         </div>
-      </section>
+      </KeywordZoom>
 
       {/* Fullscreen story sections */}
       <style>{`@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }`}</style>
-      {sections.map((section, index) => (
+      {sections.slice(1).map((section, index) => (
         <section
           key={section.id}
           id={section.id}
-          ref={(el) => { sectionRefs.current[index] = el }}
+          ref={(el) => { sectionRefs.current[index + 1] = el }}
           className="min-h-screen flex items-center justify-center relative px-8 md:pl-24 z-[2]"
         >
           {section.id === 'code' ? (
             /* Terminal window for Code section */
             <div
-              className={`w-full max-w-3xl mx-auto transition-all duration-1000 ease-out
+              className={`w-full max-w-4xl mx-auto transition-all duration-1000 ease-out
                 ${visibleSections.has(section.id)
                   ? 'opacity-100 translate-y-0 scale-100'
                   : 'opacity-0 translate-y-16 scale-95'}`}
             >
-              <div className="bg-gray-950 border border-gray-700 rounded-xl shadow-2xl shadow-green-500/10 overflow-hidden">
+              <div className={`bg-gray-950 border border-gray-700 rounded-xl shadow-2xl shadow-green-500/10 ${terminalFont.className}`}>
                 {/* macOS title bar */}
                 <div className="flex items-center gap-2 px-4 py-3 bg-gray-900 border-b border-gray-800">
                   <span className="w-3 h-3 rounded-full bg-red-500" />
                   <span className="w-3 h-3 rounded-full bg-yellow-500" />
                   <span className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="ml-4 font-mono text-xs text-gray-500">simon@dev ~ %</span>
+                  <span className="ml-4 text-xs text-gray-500">root@sohneg.ch — bash</span>
                 </div>
 
                 {/* Scanline overlay */}
@@ -194,25 +222,23 @@ export default function About() {
                   style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,65,0.02) 1px, rgba(0,255,65,0.02) 2px)' }} />
 
                 {/* Terminal content */}
-                <div className="relative p-8 md:p-12">
-                  <h2
-                    className={`font-mono text-2xl md:text-4xl font-bold text-green-400 mb-6
-                      transition-all duration-700
-                      ${visibleSections.has(section.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                    style={{ transitionDelay: '400ms' }}
-                  >
-                    <span className="text-green-600">$ </span>{t(section.titleKey)}
-                    <span className="inline-block ml-1 text-green-400" style={{ animation: 'blink 1s step-end infinite' }}>|</span>
-                  </h2>
-
-                  <p
-                    className={`font-mono text-base md:text-lg leading-relaxed text-green-400/80
-                      transition-all duration-700
-                      ${visibleSections.has(section.id) ? 'opacity-80 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                    style={{ transitionDelay: '600ms' }}
-                  >
-                    {t(section.textKey)}
-                  </p>
+                <div className="relative p-6 md:p-8 text-base md:text-xl leading-relaxed">
+                  {/* Invisible placeholder to reserve full size */}
+                  <div aria-hidden="true" className="invisible">
+                    <div className="text-sm mb-4">Last login: Wed Mar 15 00:00:00 2026 from 000.000.000.000</div>
+                    <div className="mb-2">root@sohneg.ch:~# cat {t(section.titleKey).toLowerCase().replace(/\s+/g, '_')}.txt</div>
+                    <div className="mb-2">root@sohneg.ch:~# {t(section.textKey)}</div>
+                    <div className="mt-4">root@sohneg.ch:~# |</div>
+                  </div>
+                  {/* Visible overlay */}
+                  <div className="absolute inset-0 p-6 md:p-8">
+                    <TerminalSequence
+                      loginText={`Last login: ${new Date().toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', year: 'numeric', hour12: false })}${visitorIp ? ` from ${visitorIp}` : ''}`}
+                      command={`cat ${t(section.titleKey).toLowerCase().replace(/\s+/g, '_')}.txt`}
+                      output={t(section.textKey)}
+                      trigger={visibleSections.has(section.id)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
