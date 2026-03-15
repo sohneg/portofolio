@@ -77,7 +77,7 @@ export default function ScrollSnap({
       const animate = (now: number) => {
         const elapsed = now - startTime
         const t = Math.min(1, elapsed / duration)
-        const eased = 1 - Math.pow(1 - t, 3)
+        const eased = t
         window.scrollTo(0, start + dist * eased)
         if (t < 1) {
           requestAnimationFrame(animate)
@@ -124,8 +124,8 @@ export default function ScrollSnap({
       })()
 
       const duration = inZone
-        ? Math.min(4000, Math.max(1500, dist * 1.0))
-        : Math.min(1000, Math.max(400, dist * 0.6))
+        ? Math.min(6000, Math.max(3000, dist * 1.5))
+        : Math.min(800, Math.max(300, dist * 0.5))
 
       currentPointRef.current = nextIdx
       animateTo(target, duration)
@@ -165,8 +165,8 @@ export default function ScrollSnap({
       })()
 
       const duration = inZone
-        ? Math.min(4000, Math.max(1500, dist * 1.0))
-        : Math.min(1000, Math.max(400, dist * 0.6))
+        ? Math.min(6000, Math.max(3000, dist * 1.5))
+        : Math.min(800, Math.max(300, dist * 0.5))
 
       currentPointRef.current = nextIdx
       animateTo(target, duration)

@@ -206,7 +206,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
         const flyEnd = 0.65
         const flyT = Math.max(0, Math.min(1, (p - flyStart) / (flyEnd - flyStart)))
 
-        if (p < 0.8) {
+        if (p < 0.92) {
           const z = -800 + flyT * 800
           const opacity = flyT < 0.3 ? flyT / 0.3 : 1
 
@@ -225,7 +225,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       breadRefs.current.forEach((bread, i) => {
         if (!bread) return
         const b = breads[i]
-        const startP = 0.7 + b.delay
+        const startP = 0.82 + b.delay
         const breadVisible = p >= startP
         const flyDuration = 0.14 // flight duration for the arc
         const breadFlyT = Math.max(0, Math.min(1, (p - startP) / flyDuration))
@@ -263,7 +263,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       // Scatter - wait until breads have clearly passed through center
       // Bread 1 starts 0.82, duration 0.14, reaches ~60% of flight at 0.82+0.14*0.6=0.904
       if (scatterEl) {
-        const impactP = 0.8
+        const impactP = 0.92
         if (p >= impactP) {
           scatterEl.style.display = ''
           const scatter = (p - impactP) / 0.15 // no cap - keeps flying
@@ -288,11 +288,13 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
               }
             })
           }
-          const fadeOut = Math.max(0, 1 - scatter * 1.5)
+          const fadeOut = Math.max(0, 1 - scatter * 2.5)
           for (const c of scatterCacheRef.current) {
             c.el.style.transform = `translate(${c.dx * scatter}px, ${c.dy * scatter}px) rotate(${c.rot * scatter}deg)`
             c.el.style.opacity = String(fadeOut)
           }
+          // Hide whole container once fully faded
+          if (fadeOut <= 0) scatterEl.style.display = 'none'
         } else {
           scatterEl.style.display = 'none'
         }
@@ -301,7 +303,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       // Crumbs
       crumbRefs.current.forEach((el, i) => {
         if (!el) return
-        const crumbStart = 0.8
+        const crumbStart = 0.92
         if (p >= crumbStart) {
           const ct = Math.min(1, (p - crumbStart) / 0.15)
           const c = crumbs[i]
