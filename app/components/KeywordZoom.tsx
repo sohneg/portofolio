@@ -51,6 +51,13 @@ interface ScatterUnit {
   rotation: number
 }
 
+// Deterministic pseudo-random to avoid SSR/client hydration mismatch
+// Round to 6 decimal places to prevent floating-point divergence between server/client
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 49297
+  return Math.round((x - Math.floor(x)) * 1000000) / 1000000
+}
+
 /** Split text into words (preserving spaces as part of the preceding word) for mobile,
  *  or characters for desktop. Returns array of token strings. */
 function splitForScatter(text: string, isMobile: boolean): string[] {
@@ -106,29 +113,29 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
   const titleTokens = useMemo(() => splitForScatter(flyInTitle || '', isMobile), [flyInTitle, isMobile])
   const textTokens = useMemo(() => splitForScatter(flyInText || '', isMobile), [flyInText, isMobile])
 
-  // Generate scatter data per token (much fewer on mobile)
+  // Generate scatter data - large values so chars fly completely off screen
   const titleScatter = useMemo<ScatterUnit[]>(() =>
-    titleTokens.map(() => ({
-      dx: (Math.random() - 0.5) * 900,
-      dy: (Math.random() - 0.5) * 700,
-      rotation: (Math.random() - 0.5) * 720,
+    titleTokens.map((_, i) => ({
+      dx: (seededRandom(i * 3 + 1) - 0.5) * 3000,
+      dy: (seededRandom(i * 3 + 2) - 0.5) * 2500,
+      rotation: (seededRandom(i * 3 + 3) - 0.5) * 720,
     })), [titleTokens])
 
   const textScatter = useMemo<ScatterUnit[]>(() =>
-    textTokens.map(() => ({
-      dx: (Math.random() - 0.5) * 900,
-      dy: (Math.random() - 0.5) * 700,
-      rotation: (Math.random() - 0.5) * 720,
+    textTokens.map((_, i) => ({
+      dx: (seededRandom(i * 3 + 1000) - 0.5) * 3000,
+      dy: (seededRandom(i * 3 + 1001) - 0.5) * 2500,
+      rotation: (seededRandom(i * 3 + 1002) - 0.5) * 720,
     })), [textTokens])
 
   // Fewer crumbs on mobile
   const crumbCount = isMobile ? 8 : 15
   const crumbs = useMemo(() =>
-    Array.from({ length: crumbCount }, () => ({
-      dx: (Math.random() - 0.5) * 500,
-      dy: (Math.random() - 0.3) * 400,
-      size: 3 + Math.random() * 8,
-      rotation: Math.random() * 360,
+    Array.from({ length: crumbCount }, (_, i) => ({
+      dx: (seededRandom(i * 4 + 2000) - 0.5) * 500,
+      dy: (seededRandom(i * 4 + 2001) - 0.3) * 400,
+      size: 3 + seededRandom(i * 4 + 2002) * 8,
+      rotation: seededRandom(i * 4 + 2003) * 360,
     })), [crumbCount])
 
   // Check for bread images
@@ -199,7 +206,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
         const flyEnd = 0.65
         const flyT = Math.max(0, Math.min(1, (p - flyStart) / (flyEnd - flyStart)))
 
-        if (p < 0.91) {
+        if (p < 0.8) {
           const z = -800 + flyT * 800
           const opacity = flyT < 0.3 ? flyT / 0.3 : 1
 
@@ -218,7 +225,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       breadRefs.current.forEach((bread, i) => {
         if (!bread) return
         const b = breads[i]
-        const startP = 0.82 + b.delay
+        const startP = 0.7 + b.delay
         const breadVisible = p >= startP
         const flyDuration = 0.14 // flight duration for the arc
         const breadFlyT = Math.max(0, Math.min(1, (p - startP) / flyDuration))
@@ -256,11 +263,10 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       // Scatter - wait until breads have clearly passed through center
       // Bread 1 starts 0.82, duration 0.14, reaches ~60% of flight at 0.82+0.14*0.6=0.904
       if (scatterEl) {
-        const impactP = 0.91
+        const impactP = 0.8
         if (p >= impactP) {
           scatterEl.style.display = ''
-          const scatter = Math.min(1, (p - impactP) / 0.07)
-          const fadeOut = p > 0.95 ? Math.max(0, 1 - (p - 0.95) / 0.05) : 1
+          const scatter = (p - impactP) / 0.15 // no cap - keeps flying
 
           // Shake on impact
           const shake = p >= impactP && p < impactP + 0.015
@@ -268,7 +274,6 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
           const shakeY = shake ? Math.cos(p * 300) * 8 * (1 - (p - impactP) / 0.015) : 0
 
           scatterEl.style.transform = `translate(${shakeX}px, ${shakeY}px)`
-          scatterEl.style.opacity = String(fadeOut)
 
           // Update each character span (cached)
           if (!scatterCacheRef.current) {
@@ -294,7 +299,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
       // Crumbs
       crumbRefs.current.forEach((el, i) => {
         if (!el) return
-        const crumbStart = 0.91
+        const crumbStart = 0.8
         if (p >= crumbStart) {
           const ct = Math.min(1, (p - crumbStart) / 0.15)
           const c = crumbs[i]
@@ -314,9 +319,9 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
   }, [crumbs])
 
   return (
-    <div ref={containerRef} style={{ height: '600vh' }}>
+    <div ref={containerRef} data-keyword-zoom style={{ height: '600vh' }}>
       <div
-        className="sticky top-0 overflow-clip z-[2]"
+        className="sticky top-0 z-[2]"
         style={{
           height: '100svh',
           perspective: '1000px',

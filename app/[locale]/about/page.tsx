@@ -8,6 +8,7 @@ import GridBackground from '@/components/GridBackground'
 import PageAtmosphere, { type PageAtmosphereHandle } from '@/components/PageAtmosphere'
 import KeywordZoom from '@/components/KeywordZoom'
 import TerminalSequence from '@/components/TerminalSequence'
+import ScrollSnap from '@/components/ScrollSnap'
 
 const terminalFont = VT323({ weight: '400', subsets: ['latin'] })
 
@@ -344,6 +345,13 @@ export default function About() {
           </p>
         </div>
       </section>
+
+      <ScrollSnap
+        targets={[
+          ...sections.slice(1).map(s => `#${s.id}`),
+        ]}
+        noSnapZone="[data-keyword-zoom]"
+      />
     </main>
   )
 }
