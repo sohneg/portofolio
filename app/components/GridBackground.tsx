@@ -18,11 +18,11 @@ interface GridBackgroundProps {
   fixed?: boolean
   maskImage?: string
   style?: React.CSSProperties
-  pluckAmplitude?: number
-  pluckDamping?: number
-  pluckFrequency?: number
-  pluckRadius?: number
-  propagationSpeed?: number
+  wobbleAmplitude?: number
+  wobbleDamping?: number
+  wobbleFrequency?: number
+  wobbleRadius?: number
+  wobbleSpread?: number
   gridSpacing?: number
   spotlightRadius?: number
 }
@@ -55,11 +55,11 @@ export default function GridBackground({
   fixed = false,
   maskImage = 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)',
   style = {},
-  pluckAmplitude = 25,
-  pluckDamping = 1.2,
-  pluckFrequency = 5,
-  pluckRadius = 150,
-  propagationSpeed = 500,
+  wobbleAmplitude = 5,
+  wobbleDamping = 3,
+  wobbleFrequency = 8,
+  wobbleRadius = 20,
+  wobbleSpread = 1500,
   gridSpacing = GRID_SPACING,
   spotlightRadius = 200,
 }: GridBackgroundProps) {
@@ -93,9 +93,9 @@ export default function GridBackground({
           const p = plucks[i]
           if (p.linePos !== linePos) continue
           const elapsed = (now - p.time) / 1000
-          const amp = p.amplitude * Math.sin(pluckFrequency * Math.PI * 2 * elapsed) * Math.exp(-pluckDamping * elapsed)
+          const amp = p.amplitude * Math.sin(wobbleFrequency * Math.PI * 2 * elapsed) * Math.exp(-wobbleDamping * elapsed)
           const dist = Math.abs(drawPos - p.hitPos)
-          const spread = propagationSpeed * Math.max(elapsed, 0.05)
+          const spread = wobbleSpread * Math.max(elapsed, 0.05)
           total += amp * Math.exp(-((dist * dist) / (spread * spread)))
         }
         offsets[si] = total
@@ -103,7 +103,7 @@ export default function GridBackground({
 
       return offsets
     },
-    [pluckDamping, pluckFrequency, propagationSpeed],
+    [wobbleDamping, wobbleFrequency, wobbleSpread],
   )
 
   // Prune dead plucks (batch, no splice in loop)
@@ -111,13 +111,13 @@ export default function GridBackground({
     let writeIdx = 0
     for (let i = 0; i < plucks.length; i++) {
       const elapsed = (now - plucks[i].time) / 1000
-      const amp = Math.abs(plucks[i].amplitude * Math.exp(-pluckDamping * elapsed))
+      const amp = Math.abs(plucks[i].amplitude * Math.exp(-wobbleDamping * elapsed))
       if (amp >= MIN_AMPLITUDE) {
         plucks[writeIdx++] = plucks[i]
       }
     }
     plucks.length = writeIdx
-  }, [pluckDamping])
+  }, [wobbleDamping])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -174,35 +174,35 @@ export default function GridBackground({
 
     const createPlucksAt = (x: number, y: number, now: number) => {
       const hPlucks = hPlucksRef.current
-      const startLine = Math.max(1, Math.floor((y - pluckRadius) / gridSpacing))
-      const endLine = Math.floor((y + pluckRadius) / gridSpacing)
+      const startLine = Math.max(1, Math.floor((y - wobbleRadius) / gridSpacing))
+      const endLine = Math.floor((y + wobbleRadius) / gridSpacing)
       for (let i = startLine; i <= endLine; i++) {
         const lineY = i * gridSpacing
         const dist = Math.abs(y - lineY)
-        if (dist < pluckRadius) {
-          const strength = 1 - dist / pluckRadius
+        if (dist < wobbleRadius) {
+          const strength = 1 - dist / wobbleRadius
           const already = hPlucks.some(
             (p) => p.linePos === lineY && Math.abs(p.hitPos - x) < gridSpacing && now - p.time < 200,
           )
           if (!already) {
-            hPlucks.push({ linePos: lineY, hitPos: x, time: now, amplitude: pluckAmplitude * strength })
+            hPlucks.push({ linePos: lineY, hitPos: x, time: now, amplitude: wobbleAmplitude * strength })
           }
         }
       }
 
       const vPlucks = vPlucksRef.current
-      const startCol = Math.max(1, Math.floor((x - pluckRadius) / gridSpacing))
-      const endCol = Math.floor((x + pluckRadius) / gridSpacing)
+      const startCol = Math.max(1, Math.floor((x - wobbleRadius) / gridSpacing))
+      const endCol = Math.floor((x + wobbleRadius) / gridSpacing)
       for (let i = startCol; i <= endCol; i++) {
         const lineX = i * gridSpacing
         const dist = Math.abs(x - lineX)
-        if (dist < pluckRadius) {
-          const strength = 1 - dist / pluckRadius
+        if (dist < wobbleRadius) {
+          const strength = 1 - dist / wobbleRadius
           const already = vPlucks.some(
             (p) => p.linePos === lineX && Math.abs(p.hitPos - y) < gridSpacing && now - p.time < 200,
           )
           if (!already) {
-            vPlucks.push({ linePos: lineX, hitPos: y, time: now, amplitude: pluckAmplitude * strength })
+            vPlucks.push({ linePos: lineX, hitPos: y, time: now, amplitude: wobbleAmplitude * strength })
           }
         }
       }
@@ -213,9 +213,11 @@ export default function GridBackground({
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      const { left, top } = sizeRef.current
-      const x = e.clientX - left
-      const y = e.clientY - top
+      const rect = canvas.getBoundingClientRect()
+      sizeRef.current.left = rect.left
+      sizeRef.current.top = rect.top
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
       const now = performance.now()
 
       mouseRef.current = { x, y, active: true }
@@ -366,7 +368,7 @@ export default function GridBackground({
       document.removeEventListener('mouseleave', handleMouseLeave)
       themeObserver.disconnect()
     }
-  }, [pluckAmplitude, pluckRadius, gridSpacing, spotlightRadius, computeLineDisplacements, pruneDeadPlucks])
+  }, [wobbleAmplitude, wobbleRadius, gridSpacing, spotlightRadius, computeLineDisplacements, pruneDeadPlucks])
 
   const positionClass = fixed ? 'fixed' : 'absolute'
 
