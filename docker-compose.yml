@@ -1,0 +1,7 @@
+services:
+  sohneg:
+    image: harbor.sohneg.ch/sohneg.ch/web:latest
+    container_name: sohneg
+    restart: unless-stopped
+    ports:
+      - "4001:3000"

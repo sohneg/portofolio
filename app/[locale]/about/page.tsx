@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { Circle, ArrowRight, Code, Briefcase, Rocket, Heart, Smile } from 'lucide-react'
+import GridBackground from '@/components/GridBackground'
 
 interface Section {
   id: string
@@ -57,45 +58,14 @@ export default function About() {
 
   return (
     <main className="min-h-screen relative overflow-hidden">
-      {/* SVG filter for dissolving effect */}
-      <svg className="absolute w-0 h-0">
-        <defs>
-          <filter id="dissolve-about">
-            <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed={789} result="noise" />
-            <feComponentTransfer in="noise" result="fade">
-              <feFuncA type="linear" slope="2.5" intercept="-0.6" />
-            </feComponentTransfer>
-            <feComposite in="SourceGraphic" in2="fade" operator="in" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Math book grid background with dissolve and parallax */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `
-            repeating-linear-gradient(
-              to bottom,
-              transparent,
-              transparent 19px,
-              var(--text-secondary) 19px,
-              var(--text-secondary) 20px
-            ),
-            repeating-linear-gradient(
-              to right,
-              transparent,
-              transparent 19px,
-              var(--text-secondary) 19px,
-              var(--text-secondary) 20px
-            )
-          `,
-          opacity: 0.25,
-          filter: 'url(#dissolve-about)',
-          maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)',
-          transform: `translateY(${scrollY * -0.1}px)`,
-        }}
+      <GridBackground
+        filterId="dissolve-about"
+        filterSeed={789}
+        filterFrequency={0.015}
+        filterSlope={2.5}
+        filterIntercept={-0.6}
+        fixed
+        style={{ transform: `translateY(${scrollY * -0.1}px)` }}
       />
 
 
