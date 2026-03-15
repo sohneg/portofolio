@@ -202,7 +202,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
           // X: from startX% → 50% (center) → 80% (right)
           const bx = b.startX + breadFlyT * (80 - b.startX)
           // Y: parabolic arc - starts low, peaks high at center, goes down again
-          const arcHeight = -40 // how high the arc peaks above center
+          const arcHeight = -25 // how high the arc peaks above center
           const by = b.startY + breadFlyT * (70 - b.startY) + arcHeight * Math.sin(breadFlyT * Math.PI)
 
           const bScale = b.scale * (1 + Math.sin(breadFlyT * Math.PI) * 0.2)
