@@ -75,6 +75,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
     { delay: 0.035, startX: -25, startY: 95, rotEnd: -55, scale: 1.0 },
   ], [])
   const scatterRef = useRef<HTMLDivElement>(null)
+  const scatterCacheRef = useRef<{ el: HTMLElement; dx: number; dy: number; rot: number }[] | null>(null)
   const crumbRefs = useRef<(HTMLDivElement | null)[]>([])
   const [breadImgs, setBreadImgs] = useState<(string | null)[]>([null, null, null])
 
@@ -149,15 +150,9 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
           : localT > 0.7
             ? (1 - localT) / 0.3
             : 1
-        const blur = localT < 0.2
-          ? (1 - localT / 0.2) * 5
-          : localT > 0.8
-            ? ((localT - 0.8) / 0.2) * 5
-            : 0
 
         el.style.transform = `translateZ(${z}px)`
         el.style.opacity = String(opacity)
-        el.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none'
       })
 
       // === PHASE 2: Baker fly-in (0.45 - 0.65) ===
@@ -170,11 +165,9 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
         if (p < 0.91) {
           const z = -800 + flyT * 800
           const opacity = flyT < 0.3 ? flyT / 0.3 : 1
-          const blur = flyT < 0.4 ? (1 - flyT / 0.4) * 6 : 0
 
           flyEl.style.transform = `translateZ(${z}px)`
           flyEl.style.opacity = String(opacity)
-          flyEl.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none'
           flyEl.style.display = ''
         } else {
           flyEl.style.display = 'none'
@@ -240,16 +233,22 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
           scatterEl.style.transform = `translate(${shakeX}px, ${shakeY}px)`
           scatterEl.style.opacity = String(fadeOut)
 
-          // Update each character span
-          const chars = scatterEl.querySelectorAll('[data-scatter]')
-          chars.forEach((ch) => {
-            const el = ch as HTMLElement
-            const dx = parseFloat(el.dataset.dx || '0')
-            const dy = parseFloat(el.dataset.dy || '0')
-            const rot = parseFloat(el.dataset.rot || '0')
-            el.style.transform = `translate(${dx * scatter}px, ${dy * scatter}px) rotate(${rot * scatter}deg)`
-            el.style.opacity = String(1 - scatter * 0.6)
-          })
+          // Update each character span (cached)
+          if (!scatterCacheRef.current) {
+            const chars = scatterEl.querySelectorAll('[data-scatter]')
+            scatterCacheRef.current = Array.from(chars).map(ch => {
+              const el = ch as HTMLElement
+              return {
+                el,
+                dx: parseFloat(el.dataset.dx || '0'),
+                dy: parseFloat(el.dataset.dy || '0'),
+                rot: parseFloat(el.dataset.rot || '0'),
+              }
+            })
+          }
+          for (const c of scatterCacheRef.current) {
+            c.el.style.transform = `translate(${c.dx * scatter}px, ${c.dy * scatter}px) rotate(${c.rot * scatter}deg)`
+          }
         } else {
           scatterEl.style.display = 'none'
         }
@@ -304,7 +303,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
                 ? '2 / 2 / span 2 / span 2'
                 : `${kw.row} / ${kw.col}`,
               opacity: 0,
-              willChange: 'transform, opacity, filter',
+              willChange: 'transform, opacity',
             }}
           >
             {kw.special ? <b>{kw.text}</b> : kw.text}
@@ -323,7 +322,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
             style={{
               transformStyle: 'preserve-3d',
               opacity: 0,
-              willChange: 'transform, opacity, filter',
+              willChange: 'transform, opacity',
             }}
           >
             <div className="max-w-2xl mx-auto text-center">
