@@ -167,6 +167,8 @@ export default function About() {
             <p className="text-lg md:text-xl leading-relaxed opacity-80">{t('chapter1Text')}</p>
           </div>
         }
+        flyInTitle={t('chapter1Title')}
+        flyInText={t('chapter1Text')}
         flyInRef={(el) => { sectionRefs.current[0] = el }}
       >
         {/* Hero content floats on top, fades out as you scroll */}
@@ -191,6 +193,7 @@ export default function About() {
         </div>
       </KeywordZoom>
 
+      {/* Bread impact transition: baker → wendepunkt */}
       {/* Fullscreen story sections */}
       <style>{`@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }`}</style>
       {sections.slice(1).map((section, index) => (
