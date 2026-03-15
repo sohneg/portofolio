@@ -70,7 +70,7 @@ export default function About() {
 
 
       {/* Hero section */}
-      <section className="min-h-screen flex flex-col justify-center items-center relative px-8">
+      <section className="min-h-screen flex flex-col justify-center items-center relative px-8 md:pl-24">
         <div
           className="text-center"
           style={{ transform: `translateY(${scrollY * 0.4}px)`, opacity: Math.max(0, 1 - scrollY / 400) }}
@@ -92,7 +92,7 @@ export default function About() {
       </section>
 
       {/* Story sections */}
-      <div className="relative max-w-4xl mx-auto px-8 pb-32">
+      <div className="relative max-w-4xl mx-auto px-8 md:pl-24 pb-32">
         {/* Timeline line */}
         <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-secondary/30 to-transparent" />
 
@@ -150,7 +150,7 @@ export default function About() {
       </div>
 
       {/* End section */}
-      <section className="min-h-[50vh] flex items-center justify-center px-8 pb-32">
+      <section className="min-h-[50vh] flex items-center justify-center px-8 md:pl-24 pb-32">
         <div
           className={`text-center transition-all duration-700
             ${visibleSections.has('life') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
