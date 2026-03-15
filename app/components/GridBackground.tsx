@@ -70,6 +70,8 @@ export default function GridBackground({
   const gridColorRef = useRef('rgba(128,128,128,0.25)')
   const sizeRef = useRef({ w: 0, h: 0, left: 0, top: 0 })
   const mouseRef = useRef({ x: -9999, y: -9999, active: false })
+  const offscreenRef = useRef<HTMLCanvasElement | null>(null)
+  const isDarkRef = useRef(true)
   const prevMouseRef = useRef<{ x: number; y: number } | null>(null)
   const rainbowFieldRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -131,12 +133,14 @@ export default function GridBackground({
       fc.height = Math.ceil(h)
       const fctx = fc.getContext('2d')
       if (!fctx) return fc
+      const boost = isDarkRef.current ? 1 : 2
       for (const spot of RAINBOW_SPOTS) {
         const cx = spot.px * w
         const cy = spot.py * h
+        const a = Math.min(1, spot.a * boost)
         const grad = fctx.createRadialGradient(cx, cy, 0, cx, cy, spot.radius)
-        grad.addColorStop(0, `rgba(${spot.r},${spot.g},${spot.b},${spot.a})`)
-        grad.addColorStop(spot.fade, `rgba(${spot.r},${spot.g},${spot.b},${spot.a * 0.3})`)
+        grad.addColorStop(0, `rgba(${spot.r},${spot.g},${spot.b},${a})`)
+        grad.addColorStop(spot.fade, `rgba(${spot.r},${spot.g},${spot.b},${a * 0.4})`)
         grad.addColorStop(1, `rgba(${spot.r},${spot.g},${spot.b},0)`)
         fctx.fillStyle = grad
         fctx.fillRect(0, 0, w, h)
@@ -145,6 +149,8 @@ export default function GridBackground({
     }
 
     const updateColor = () => {
+      const theme = document.documentElement.getAttribute('data-theme')
+      isDarkRef.current = theme !== 'light'
       const temp = document.createElement('div')
       temp.style.color = 'var(--text-secondary)'
       document.body.appendChild(temp)
@@ -157,7 +163,11 @@ export default function GridBackground({
     }
     updateColor()
 
-    const themeObserver = new MutationObserver(updateColor)
+    const themeObserver = new MutationObserver(() => {
+      updateColor()
+      const { w, h } = sizeRef.current
+      if (w > 0 && h > 0) rainbowFieldRef.current = buildRainbowField(w, h)
+    })
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 
     const resize = () => {
@@ -311,48 +321,69 @@ export default function GridBackground({
         drawPathFromOffsets(ctx, vOffsets[i], i * gridSpacing, h, false)
       }
 
-      // 2) Rainbow spotlight - only lines near mouse
+      // 2) Rainbow spotlight - soft radial fade via offscreen canvas
       if (mouse.active && rainbowFieldRef.current) {
         const sr = spotlightRadius
         const pattern = ctx.createPattern(rainbowFieldRef.current, 'no-repeat')
         if (pattern) {
-          ctx.save()
-          ctx.beginPath()
-          ctx.arc(mouse.x, mouse.y, sr, 0, Math.PI * 2)
-          ctx.clip()
+          // Get or create offscreen canvas
+          if (!offscreenRef.current) {
+            offscreenRef.current = document.createElement('canvas')
+          }
+          const oc = offscreenRef.current
+          const dpr = window.devicePixelRatio || 1
+          if (oc.width !== canvas.width || oc.height !== canvas.height) {
+            oc.width = canvas.width
+            oc.height = canvas.height
+          }
+          const octx = oc.getContext('2d')!
+          octx.setTransform(dpr, 0, 0, dpr, 0, 0)
+          octx.clearRect(0, 0, w, h)
 
-          ctx.strokeStyle = pattern
+          octx.strokeStyle = pattern
 
-          // Glow
-          ctx.lineWidth = 2
-          ctx.shadowBlur = 6
-          ctx.shadowColor = 'rgba(255,255,255,0.3)'
-          ctx.globalAlpha = 0.35
+          // Glow pass
+          octx.lineWidth = 2.5
+          octx.shadowBlur = 10
+          octx.shadowColor = 'rgba(255,255,255,0.5)'
+          octx.globalAlpha = isDarkRef.current ? 0.6 : 0.9
 
-          // Only draw lines within spotlight range
           const hMin = Math.max(1, Math.floor((mouse.y - sr) / gridSpacing))
           const hMax = Math.min(hLines, Math.ceil((mouse.y + sr) / gridSpacing))
           for (let i = hMin; i <= hMax; i++) {
-            drawPathFromOffsets(ctx, hOffsets[i], i * gridSpacing, w, true)
+            drawPathFromOffsets(octx, hOffsets[i], i * gridSpacing, w, true)
           }
           const vMin = Math.max(1, Math.floor((mouse.x - sr) / gridSpacing))
           const vMax = Math.min(vLines, Math.ceil((mouse.x + sr) / gridSpacing))
           for (let i = vMin; i <= vMax; i++) {
-            drawPathFromOffsets(ctx, vOffsets[i], i * gridSpacing, h, false)
+            drawPathFromOffsets(octx, vOffsets[i], i * gridSpacing, h, false)
           }
 
-          // Sharp
-          ctx.shadowBlur = 0
-          ctx.lineWidth = 1
-          ctx.globalAlpha = 0.5
+          // Sharp pass
+          octx.shadowBlur = 0
+          octx.lineWidth = 1.2
+          octx.globalAlpha = isDarkRef.current ? 0.8 : 1.0
           for (let i = hMin; i <= hMax; i++) {
-            drawPathFromOffsets(ctx, hOffsets[i], i * gridSpacing, w, true)
+            drawPathFromOffsets(octx, hOffsets[i], i * gridSpacing, w, true)
           }
           for (let i = vMin; i <= vMax; i++) {
-            drawPathFromOffsets(ctx, vOffsets[i], i * gridSpacing, h, false)
+            drawPathFromOffsets(octx, vOffsets[i], i * gridSpacing, h, false)
           }
 
-          ctx.restore()
+          // Apply soft radial mask
+          octx.globalCompositeOperation = 'destination-in'
+          octx.globalAlpha = 1
+          const grad = octx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, sr)
+          grad.addColorStop(0, 'rgba(0,0,0,1)')
+          grad.addColorStop(0.4, 'rgba(0,0,0,0.7)')
+          grad.addColorStop(0.7, 'rgba(0,0,0,0.3)')
+          grad.addColorStop(1, 'rgba(0,0,0,0)')
+          octx.fillStyle = grad
+          octx.fillRect(mouse.x - sr, mouse.y - sr, sr * 2, sr * 2)
+          octx.globalCompositeOperation = 'source-over'
+
+          // Composite onto main canvas
+          ctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, w, h)
         }
       }
 
