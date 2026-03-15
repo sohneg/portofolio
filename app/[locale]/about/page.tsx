@@ -1,9 +1,10 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Circle, ArrowRight, Code, Briefcase, Rocket, Heart, Smile } from 'lucide-react'
 import GridBackground from '@/components/GridBackground'
+import GlowTimeline from '@/components/GlowTimeline'
 
 interface Section {
   id: string
@@ -27,6 +28,23 @@ export default function About() {
   const [scrollY, setScrollY] = useState(0)
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
   const sectionRefs = useRef<(HTMLElement | null)[]>([])
+  const storyRef = useRef<HTMLDivElement>(null)
+  const [storyHeight, setStoryHeight] = useState(0)
+  const [storyOffsetTop, setStoryOffsetTop] = useState(0)
+  const [sectionYPositions, setSectionYPositions] = useState<number[]>([])
+
+  const updateMeasurements = useCallback(() => {
+    if (storyRef.current) {
+      setStoryHeight(storyRef.current.scrollHeight)
+      setStoryOffsetTop(storyRef.current.getBoundingClientRect().top + window.scrollY)
+    }
+
+    const positions = sectionRefs.current.map(ref => {
+      if (!ref || !storyRef.current) return 0
+      return (ref.offsetTop - storyRef.current.offsetTop) / storyRef.current.scrollHeight
+    })
+    setSectionYPositions(positions)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,12 +67,19 @@ export default function About() {
     })
 
     window.addEventListener('scroll', handleScroll)
+    window.addEventListener('resize', updateMeasurements)
+    requestAnimationFrame(updateMeasurements)
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', updateMeasurements)
       observer.disconnect()
     }
-  }, [])
+  }, [updateMeasurements])
 
+  const timelineProgress = storyHeight > 0
+    ? Math.max(0, Math.min(1, (scrollY - storyOffsetTop + window.innerHeight * 0.5) / storyHeight))
+    : 0
 
   return (
     <main className="min-h-screen relative overflow-hidden">
@@ -67,7 +92,6 @@ export default function About() {
         fixed
         style={{ transform: `translateY(${scrollY * -0.1}px)` }}
       />
-
 
       {/* Hero section */}
       <section className="min-h-screen flex flex-col justify-center items-center relative px-8 md:pl-24">
@@ -92,9 +116,14 @@ export default function About() {
       </section>
 
       {/* Story sections */}
-      <div className="relative max-w-4xl mx-auto px-8 md:pl-24 pb-32">
-        {/* Timeline line */}
-        <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-secondary/30 to-transparent" />
+      <div ref={storyRef} className="relative max-w-4xl mx-auto px-8 md:pl-24 pb-32">
+        <GlowTimeline
+          scrollProgress={timelineProgress}
+          sectionPositions={sectionYPositions}
+          activeSections={visibleSections}
+          sectionIds={sections.map(s => s.id)}
+          height={storyHeight}
+        />
 
         {sections.map((section, index) => (
           <section
@@ -103,13 +132,6 @@ export default function About() {
             ref={(el) => { sectionRefs.current[index] = el }}
             className={`relative py-24 md:py-32 ${index % 2 === 0 ? 'md:pr-1/2' : 'md:pl-1/2 md:ml-auto'}`}
           >
-            {/* Timeline dot */}
-            <div
-              className={`absolute left-8 md:left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-orange-500
-                transition-all duration-700 ${visibleSections.has(section.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}
-              style={{ transitionDelay: '200ms' }}
-            />
-
             {/* Content card */}
             <div
               className={`ml-16 md:ml-0 ${index % 2 === 0 ? 'md:mr-16' : 'md:ml-16'}
