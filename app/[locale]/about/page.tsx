@@ -11,6 +11,7 @@ import TerminalSequence from '@/components/TerminalSequence'
 import ScrollSnap from '@/components/ScrollSnap'
 import BootSequence from '@/components/BootSequence'
 import WorkTabs from '@/components/WorkTabs'
+import TachoTransition from '@/components/TachoTransition'
 
 const terminalFont = VT323({ weight: '400', subsets: ['latin'] })
 
@@ -49,7 +50,7 @@ export default function About() {
   const atmosphereRef = useRef<PageAtmosphereHandle>(null)
   const rafRef = useRef(0)
   const lastScrollYRef = useRef(-1)
-  // Boot sequence state
+  // Transition states
   const [bootActive, setBootActive] = useState(false)
 
   useEffect(() => {
@@ -244,12 +245,15 @@ export default function About() {
       {/* Fullscreen story sections */}
       <style>{`@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }`}</style>
       {sections.slice(1).map((section, index) => (
-        <section
-          key={section.id}
-          id={section.id}
-          ref={(el) => { sectionRefs.current[index + 1] = el }}
-          className="min-h-screen flex items-center pb-[15vh] md:pb-0 justify-center relative px-8 md:pl-24 z-[2]"
-        >
+        <div key={section.id}>
+          {section.id === 'tuning' && (
+            <TachoTransition visible={visibleSections.has('work')} />
+          )}
+          <section
+            id={section.id}
+            ref={(el) => { sectionRefs.current[index + 1] = el }}
+            className="min-h-screen flex items-center pb-[15vh] md:pb-0 justify-center relative px-8 md:pl-24 z-[2]"
+          >
           {section.id === 'work' ? (
             /* Dashboard layout for Work section */
             <div
@@ -351,6 +355,7 @@ export default function About() {
             </div>
           )}
         </section>
+        </div>
       ))}
 
       {/* Closing quote */}
@@ -372,10 +377,9 @@ export default function About() {
         ]}
         noSnapZone="[data-keyword-zoom]"
         onNavigate={(fromId, toId) => {
-          // Trigger boot sequence when navigating from wendepunkt to terminal
           if (fromId === 'change' && toId === 'code') {
             setBootActive(true)
-            return 'block' // prevent normal scroll, boot handles it
+            return 'block'
           }
         }}
       />
