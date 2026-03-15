@@ -5,25 +5,23 @@ import { useEffect, useRef } from 'react'
 interface ScrollSnapProps {
   targets: string[]
   noSnapZone?: string
-  debounce?: number
   enabled?: boolean
 }
 
 /**
- * Forward-only scroll snap.
- * When user stops scrolling, glide to the nearest keyframe AHEAD.
- * Never snaps backward.
+ * Trigger-based scroll snap.
+ * First scroll/wheel event triggers animation to next/prev keyframe.
+ * Further scroll input is ignored until animation completes.
+ * Works like a slideshow controlled by scroll direction.
  */
 export default function ScrollSnap({
   targets,
   noSnapZone,
-  debounce = 150,
   enabled = true,
 }: ScrollSnapProps) {
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isSnappingRef = useRef(false)
-  const lastScrollRef = useRef(0)
-  const directionRef = useRef<'down' | 'up'>('down')
+  const isAnimatingRef = useRef(false)
+  const currentPointRef = useRef(0)
+  const cooldownRef = useRef(false)
 
   useEffect(() => {
     if (!enabled) return
@@ -31,22 +29,18 @@ export default function ScrollSnap({
     const getSnapPoints = (): number[] => {
       const points: number[] = [0]
 
-      // Add zone keyframes
       if (noSnapZone) {
         const zone = document.querySelector(noSnapZone) as HTMLElement
         if (zone) {
           const zoneTop = zone.offsetTop
           const zoneScrollable = zone.offsetHeight - window.innerHeight
-          // Baker text visible keyframe
           points.push(zoneTop + zoneScrollable * 0.65)
         }
       }
 
-      // Section snap points
       targets.forEach(selector => {
         const el = document.querySelector(selector) as HTMLElement
         if (el) {
-          // Snap so section is centered
           points.push(el.offsetTop - (window.innerHeight - el.offsetHeight) / 2)
         }
       })
@@ -54,92 +48,178 @@ export default function ScrollSnap({
       return points.sort((a, b) => a - b)
     }
 
-    const snapToNearest = () => {
-      if (isSnappingRef.current) return
-
+    // Find which keyframe we're closest to
+    const findCurrentIndex = (points: number[]): number => {
       const scrollY = window.scrollY
-      const points = getSnapPoints()
-      if (points.length === 0) return
-
-      // Find nearest point in the scroll direction
-      let target: number | null = null
-
-      if (directionRef.current === 'down') {
-        // Find next point ahead (or very close behind within 50px)
-        for (const p of points) {
-          if (p >= scrollY - 50) {
-            target = p
-            break
-          }
-        }
-      } else {
-        // Scrolling up: find previous point
-        for (let i = points.length - 1; i >= 0; i--) {
-          if (points[i] <= scrollY + 50) {
-            target = points[i]
-            break
-          }
+      let bestIdx = 0
+      let bestDist = Infinity
+      for (let i = 0; i < points.length; i++) {
+        const dist = Math.abs(scrollY - points[i])
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIdx = i
         }
       }
+      return bestIdx
+    }
 
-      if (target === null) return
-      const dist = Math.abs(scrollY - target)
+    const animateTo = (target: number, duration: number) => {
+      isAnimatingRef.current = true
+      const start = window.scrollY
+      const dist = target - start
+      if (Math.abs(dist) < 5) {
+        isAnimatingRef.current = false
+        return
+      }
 
-      // Skip if already there
-      if (dist < 5) return
-
-      // Don't snap over huge distances (but allow longer snaps inside the zoom zone)
-      const inZone = noSnapZone && (() => {
-        const zone = document.querySelector(noSnapZone) as HTMLElement
-        if (!zone) return false
-        const zoneTop = zone.offsetTop
-        const zoneEnd = zoneTop + zone.offsetHeight
-        return scrollY >= zoneTop - window.innerHeight && scrollY <= zoneEnd
-      })()
-      const maxSnapDist = inZone ? Infinity : window.innerHeight * 1.5
-      if (dist > maxSnapDist) return
-
-      isSnappingRef.current = true
-
-      // Custom eased scroll - longer duration inside zoom zone for reading keywords
-      const start = scrollY
-      const totalDist = target - start
-      const duration = inZone
-        ? Math.min(6000, Math.max(2000, dist * 1.5))
-        : Math.min(1200, Math.max(400, dist * 0.8))
       const startTime = performance.now()
 
       const animate = (now: number) => {
         const elapsed = now - startTime
         const t = Math.min(1, elapsed / duration)
-        const eased = 1 - Math.pow(1 - t, 3) // ease-out cubic
-        window.scrollTo(0, start + totalDist * eased)
+        const eased = 1 - Math.pow(1 - t, 3)
+        window.scrollTo(0, start + dist * eased)
         if (t < 1) {
           requestAnimationFrame(animate)
         } else {
-          isSnappingRef.current = false
+          // Short cooldown to prevent immediate re-trigger
+          cooldownRef.current = true
+          setTimeout(() => {
+            isAnimatingRef.current = false
+            cooldownRef.current = false
+          }, 200)
         }
       }
       requestAnimationFrame(animate)
     }
 
-    const onScroll = () => {
-      if (isSnappingRef.current) return
+    const onWheel = (e: WheelEvent) => {
+      if (isAnimatingRef.current || cooldownRef.current) {
+        e.preventDefault()
+        return
+      }
 
-      const scrollY = window.scrollY
-      directionRef.current = scrollY > lastScrollRef.current ? 'down' : 'up'
-      lastScrollRef.current = scrollY
+      // Only trigger on meaningful scroll (not tiny trackpad ticks)
+      if (Math.abs(e.deltaY) < 10) return
 
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(snapToNearest, debounce)
+      e.preventDefault()
+
+      const points = getSnapPoints()
+      const currentIdx = findCurrentIndex(points)
+      const direction = e.deltaY > 0 ? 1 : -1
+      const nextIdx = Math.max(0, Math.min(points.length - 1, currentIdx + direction))
+
+      if (nextIdx === currentIdx) return
+
+      const target = points[nextIdx]
+      const dist = Math.abs(target - window.scrollY)
+
+      // Longer duration for zoom zone (keywords need reading time)
+      const inZone = noSnapZone && (() => {
+        const zone = document.querySelector(noSnapZone) as HTMLElement
+        if (!zone) return false
+        const zoneTop = zone.offsetTop
+        const zoneEnd = zoneTop + zone.offsetHeight
+        return window.scrollY >= zoneTop - window.innerHeight && target <= zoneEnd
+      })()
+
+      const duration = inZone
+        ? Math.min(4000, Math.max(1500, dist * 1.0))
+        : Math.min(1000, Math.max(400, dist * 0.6))
+
+      currentPointRef.current = nextIdx
+      animateTo(target, duration)
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true })
+    // Touch support
+    let touchStartY = 0
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (isAnimatingRef.current || cooldownRef.current) return
+
+      const touchEndY = e.changedTouches[0].clientY
+      const diff = touchStartY - touchEndY
+
+      // Need minimum swipe distance
+      if (Math.abs(diff) < 30) return
+
+      const points = getSnapPoints()
+      const currentIdx = findCurrentIndex(points)
+      const direction = diff > 0 ? 1 : -1
+      const nextIdx = Math.max(0, Math.min(points.length - 1, currentIdx + direction))
+
+      if (nextIdx === currentIdx) return
+
+      const target = points[nextIdx]
+      const dist = Math.abs(target - window.scrollY)
+
+      const inZone = noSnapZone && (() => {
+        const zone = document.querySelector(noSnapZone) as HTMLElement
+        if (!zone) return false
+        const zoneTop = zone.offsetTop
+        const zoneEnd = zoneTop + zone.offsetHeight
+        return window.scrollY >= zoneTop - window.innerHeight && target <= zoneEnd
+      })()
+
+      const duration = inZone
+        ? Math.min(4000, Math.max(1500, dist * 1.0))
+        : Math.min(1000, Math.max(400, dist * 0.6))
+
+      currentPointRef.current = nextIdx
+      animateTo(target, duration)
+    }
+
+    // Keyboard support
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (isAnimatingRef.current || cooldownRef.current) return
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== ' ' && e.key !== 'PageDown' && e.key !== 'PageUp') return
+
+      // Don't hijack keyboard if user is in terminal input
+      if ((e.target as HTMLElement)?.tagName === 'INPUT') return
+
+      e.preventDefault()
+
+      const points = getSnapPoints()
+      const currentIdx = findCurrentIndex(points)
+      const direction = (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') ? 1 : -1
+      const nextIdx = Math.max(0, Math.min(points.length - 1, currentIdx + direction))
+
+      if (nextIdx === currentIdx) return
+
+      const target = points[nextIdx]
+      const dist = Math.abs(target - window.scrollY)
+
+      const inZone = noSnapZone && (() => {
+        const zone = document.querySelector(noSnapZone) as HTMLElement
+        if (!zone) return false
+        const zoneTop = zone.offsetTop
+        const zoneEnd = zoneTop + zone.offsetHeight
+        return window.scrollY >= zoneTop - window.innerHeight && target <= zoneEnd
+      })()
+
+      const duration = inZone
+        ? Math.min(4000, Math.max(1500, dist * 1.0))
+        : Math.min(1000, Math.max(400, dist * 0.6))
+
+      currentPointRef.current = nextIdx
+      animateTo(target, duration)
+    }
+
+    window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchend', onTouchEnd, { passive: true })
+    window.addEventListener('keydown', onKeyDown)
+
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      if (timerRef.current) clearTimeout(timerRef.current)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('keydown', onKeyDown)
     }
-  }, [targets, noSnapZone, debounce, enabled])
+  }, [targets, noSnapZone, enabled])
 
   return null
 }

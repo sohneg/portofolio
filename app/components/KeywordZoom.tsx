@@ -288,8 +288,10 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
               }
             })
           }
+          const fadeOut = Math.max(0, 1 - scatter * 1.5)
           for (const c of scatterCacheRef.current) {
             c.el.style.transform = `translate(${c.dx * scatter}px, ${c.dy * scatter}px) rotate(${c.rot * scatter}deg)`
+            c.el.style.opacity = String(fadeOut)
           }
         } else {
           scatterEl.style.display = 'none'
@@ -319,7 +321,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
   }, [crumbs])
 
   return (
-    <div ref={containerRef} data-keyword-zoom style={{ height: '600vh' }}>
+    <div ref={containerRef} data-keyword-zoom style={{ height: '600vh', overflow: 'clip' }}>
       <div
         className="sticky top-0 z-[2]"
         style={{
@@ -373,12 +375,12 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
           </div>
         )}
 
-        {/* Scatter version of baker text (replaces fly-in on impact) */}
+        {/* Scatter version of baker text */}
         {flyInTitle && flyInText && (
           <div
             ref={scatterRef}
-            className="absolute inset-0 flex items-center justify-center px-8 md:pl-24"
-            style={{ display: 'none' }}
+            className="absolute inset-0 flex items-center justify-center px-8 md:pl-24 overflow-hidden"
+            style={{ display: 'none', zIndex: 30 }}
           >
             <div className="max-w-2xl mx-auto text-center font-serif">
               <h2 className="text-3xl md:text-5xl font-bold mb-6">
