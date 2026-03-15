@@ -139,7 +139,7 @@ export default function About() {
         filterSlope={2.5}
         filterIntercept={-0.6}
         fixed
-        style={{ transform: `translateY(${scrollY * -0.1}px)` }}
+        style={{ transform: `translateY(${scrollY * -0.02}px)` }}
       />
 
       {/* Hero - normal site theme */}
@@ -164,6 +164,7 @@ export default function About() {
       </section>
 
       {/* Fullscreen story sections */}
+      <style>{`@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }`}</style>
       {sections.map((section, index) => (
         <section
           key={section.id}
@@ -171,44 +172,91 @@ export default function About() {
           ref={(el) => { sectionRefs.current[index] = el }}
           className="min-h-screen flex items-center justify-center relative px-8 md:pl-24 z-[2]"
         >
-          <div
-            className={`max-w-2xl mx-auto text-center transition-all duration-1000 ease-out
-              ${visibleSections.has(section.id)
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-16'}`}
-          >
-            {/* Icon */}
+          {section.id === 'code' ? (
+            /* Terminal window for Code section */
             <div
-              className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-8
-                transition-all duration-700
-                ${visibleSections.has(section.id) ? 'scale-100 rotate-0' : 'scale-0 -rotate-12'}`}
-              style={{ transitionDelay: '200ms' }}
+              className={`w-full max-w-3xl mx-auto transition-all duration-1000 ease-out
+                ${visibleSections.has(section.id)
+                  ? 'opacity-100 translate-y-0 scale-100'
+                  : 'opacity-0 translate-y-16 scale-95'}`}
             >
-              <div className="w-full h-full flex items-center justify-center">
-                {section.icon}
+              <div className="bg-gray-950 border border-gray-700 rounded-xl shadow-2xl shadow-green-500/10 overflow-hidden">
+                {/* macOS title bar */}
+                <div className="flex items-center gap-2 px-4 py-3 bg-gray-900 border-b border-gray-800">
+                  <span className="w-3 h-3 rounded-full bg-red-500" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <span className="w-3 h-3 rounded-full bg-green-500" />
+                  <span className="ml-4 font-mono text-xs text-gray-500">simon@dev ~ %</span>
+                </div>
+
+                {/* Scanline overlay */}
+                <div className="absolute inset-0 top-[42px] pointer-events-none rounded-b-xl"
+                  style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,65,0.02) 1px, rgba(0,255,65,0.02) 2px)' }} />
+
+                {/* Terminal content */}
+                <div className="relative p-8 md:p-12">
+                  <h2
+                    className={`font-mono text-2xl md:text-4xl font-bold text-green-400 mb-6
+                      transition-all duration-700
+                      ${visibleSections.has(section.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                    style={{ transitionDelay: '400ms' }}
+                  >
+                    <span className="text-green-600">$ </span>{t(section.titleKey)}
+                    <span className="inline-block ml-1 text-green-400" style={{ animation: 'blink 1s step-end infinite' }}>|</span>
+                  </h2>
+
+                  <p
+                    className={`font-mono text-base md:text-lg leading-relaxed text-green-400/80
+                      transition-all duration-700
+                      ${visibleSections.has(section.id) ? 'opacity-80 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                    style={{ transitionDelay: '600ms' }}
+                  >
+                    {t(section.textKey)}
+                  </p>
+                </div>
               </div>
             </div>
-
-            {/* Title */}
-            <h2
-              className={`text-3xl md:text-5xl font-bold mb-6
-                transition-all duration-700
-                ${visibleSections.has(section.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-              style={{ transitionDelay: '400ms' }}
+          ) : (
+            /* Default section layout */
+            <div
+              className={`max-w-2xl mx-auto text-center transition-all duration-1000 ease-out
+                ${visibleSections.has(section.id)
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-16'}`}
             >
-              {t(section.titleKey)}
-            </h2>
+              {/* Icon */}
+              <div
+                className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-8
+                  transition-all duration-700
+                  ${visibleSections.has(section.id) ? 'scale-100 rotate-0' : 'scale-0 -rotate-12'}`}
+                style={{ transitionDelay: '200ms' }}
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {section.icon}
+                </div>
+              </div>
 
-            {/* Text */}
-            <p
-              className={`text-lg md:text-xl leading-relaxed opacity-80
-                transition-all duration-700
-                ${visibleSections.has(section.id) ? 'opacity-80 translate-y-0' : 'opacity-0 translate-y-4'}`}
-              style={{ transitionDelay: '600ms' }}
-            >
-              {t(section.textKey)}
-            </p>
-          </div>
+              {/* Title */}
+              <h2
+                className={`text-3xl md:text-5xl font-bold mb-6
+                  transition-all duration-700
+                  ${visibleSections.has(section.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: '400ms' }}
+              >
+                {t(section.titleKey)}
+              </h2>
+
+              {/* Text */}
+              <p
+                className={`text-lg md:text-xl leading-relaxed opacity-80
+                  transition-all duration-700
+                  ${visibleSections.has(section.id) ? 'opacity-80 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: '600ms' }}
+              >
+                {t(section.textKey)}
+              </p>
+            </div>
+          )}
         </section>
       ))}
 
