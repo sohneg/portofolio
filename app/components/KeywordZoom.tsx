@@ -93,10 +93,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
   const breadRefs = useRef<(HTMLDivElement | null)[]>([])
   const lastPRef = useRef(-1) // track last scroll progress to skip redundant frames
 
-  // Detect mobile once on mount
-  const [isMobile] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth < 768
-  )
+  const isMobile = false
 
   // 3 breads thrown from bottom-left in an arc through the text
   const breads = useMemo(() => [
@@ -364,7 +361,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
               if (typeof flyInRef === 'function') flyInRef(el)
               else if (flyInRef && 'current' in flyInRef) (flyInRef as React.MutableRefObject<HTMLDivElement | null>).current = el
             }}
-            className="absolute inset-0 flex items-center justify-center px-8 md:pl-24"
+            className="absolute inset-0 flex items-start pt-[15vh] md:items-center md:pt-0 justify-center px-8 md:px-8 md:pl-24"
             style={{
               transformStyle: 'preserve-3d',
               opacity: 0,
@@ -381,11 +378,11 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
         {flyInTitle && flyInText && (
           <div
             ref={scatterRef}
-            className="absolute inset-0 flex items-center justify-center px-8 md:pl-24 overflow-hidden"
+            className="absolute inset-0 flex items-start pt-[15vh] md:items-center md:pt-0 justify-center px-2 md:px-8 md:pl-24 overflow-hidden"
             style={{ display: 'none', zIndex: 30 }}
           >
             <div className="max-w-2xl mx-auto text-center font-serif">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              <h2 className="text-2xl md:text-5xl font-bold mb-4 md:mb-6">
                 {titleTokens.map((token, i) => (
                   <span
                     key={i}
@@ -400,7 +397,7 @@ export default function KeywordZoom({ children, flyInContent, flyInRef, flyInTit
                   </span>
                 ))}
               </h2>
-              <p className="text-lg md:text-xl leading-relaxed opacity-80">
+              <p className="text-sm md:text-xl leading-relaxed opacity-80">
                 {textTokens.map((token, i) => (
                   <span
                     key={i}

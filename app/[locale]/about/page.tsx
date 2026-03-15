@@ -198,11 +198,8 @@ export default function About() {
       <KeywordZoom
         flyInContent={
           <div className="font-serif">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-8">
-              <Circle />
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">{t('chapter1Title')}</h2>
-            <p className="text-lg md:text-xl leading-relaxed opacity-80">{t('chapter1Text')}</p>
+            <h2 className="text-2xl md:text-5xl font-bold mb-4 md:mb-6">{t('chapter1Title')}</h2>
+            <p className="text-sm md:text-xl leading-relaxed opacity-80">{t('chapter1Text')}</p>
           </div>
         }
         flyInTitle={t('chapter1Title')}
@@ -220,9 +217,10 @@ export default function About() {
             <p className="text-xl opacity-70 max-w-lg mx-auto">{t('subtitle')}</p>
           </div>
 
+          {/* Desktop: scroll hint */}
           <div
             ref={scrollHintRef}
-            className="absolute bottom-12 flex flex-col items-center gap-2 animate-bounce"
+            className="absolute bottom-12 hidden md:flex flex-col items-center gap-2 animate-bounce"
             style={{ willChange: 'opacity' }}
           >
             <span className="text-sm opacity-50">{t('scrollHint')}</span>
@@ -241,7 +239,7 @@ export default function About() {
           key={section.id}
           id={section.id}
           ref={(el) => { sectionRefs.current[index + 1] = el }}
-          className="min-h-screen flex items-center justify-center relative px-8 md:pl-24 z-[2]"
+          className="min-h-screen flex items-start pt-[8vh] md:items-center md:pt-0 justify-center relative px-8 md:px-8 md:pl-24 z-[2]"
         >
           {section.id === 'code' ? (
             /* Terminal window for Code section */
@@ -265,7 +263,7 @@ export default function About() {
                   style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,255,65,0.02) 1px, rgba(0,255,65,0.02) 2px)' }} />
 
                 {/* Terminal content */}
-                <div className="relative p-6 md:p-8 text-base md:text-xl leading-relaxed">
+                <div className="relative p-3 md:p-8 text-sm md:text-xl leading-relaxed">
                   {/* Invisible placeholder to reserve full size */}
                   <div aria-hidden="true" className="invisible">
                     <div>Last login: Wed Mar 15 00:00:00 2026 from 000.000.000.000</div>
@@ -276,7 +274,7 @@ export default function About() {
                   {/* Visible overlay - scrollable, hidden scrollbar */}
                   <div
                     data-terminal-scroll
-                    className="absolute inset-0 p-6 md:p-8 overflow-y-auto overscroll-contain"
+                    className="absolute inset-0 p-3 md:p-8 overflow-y-auto overscroll-contain"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
                     <TerminalSequence
@@ -297,21 +295,9 @@ export default function About() {
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-16'}`}
             >
-              {/* Icon */}
-              <div
-                className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-8
-                  transition-all duration-700
-                  ${visibleSections.has(section.id) ? 'scale-100 rotate-0' : 'scale-0 -rotate-12'}`}
-                style={{ transitionDelay: '200ms' }}
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  {section.icon}
-                </div>
-              </div>
-
               {/* Title */}
               <h2
-                className={`text-3xl md:text-5xl font-bold mb-6
+                className={`text-2xl md:text-5xl font-bold mb-4 md:mb-6
                   transition-all duration-700
                   ${visibleSections.has(section.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ transitionDelay: '400ms' }}
@@ -321,7 +307,7 @@ export default function About() {
 
               {/* Text */}
               <p
-                className={`text-lg md:text-xl leading-relaxed opacity-80
+                className={`text-sm md:text-xl leading-relaxed opacity-80
                   transition-all duration-700
                   ${visibleSections.has(section.id) ? 'opacity-80 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ transitionDelay: '600ms' }}
