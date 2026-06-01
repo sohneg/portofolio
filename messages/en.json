@@ -3,7 +3,9 @@
     "home": "Home",
     "about": "About",
     "projects": "Projects",
-    "contact": "Contact"
+    "contact": "Contact",
+    "language": "Language",
+    "theme": "Theme"
   },
   "home": {
     "greeting": "Hey",
@@ -20,8 +22,8 @@
     "chapter3Title": "A New Beginning",
     "chapter3Text": "Disability insurance enabled me to start a second apprenticeship and Schindler Elevators gave me the chance. Over four years I learned everything from the ground up as a fullstack developer: Golang, C#, Angular, ASP.NET Core, Unity, Docker and more. Thanks to strong performance, I was accepted into the internal talent program. I built a fallback website for elevator emergency communication, developed a VR application for showcasing lift models, an AR app for work instructions, and a check-in app for school visit days. Later, I even got to work in R&D on the top-secret Schindler X8. As a kid I always said: baker or programmer. Now I'm both.",
     "chapter4Title": "At Work",
-    "chapter4Text": "Since September 2025 I've been at Brabender Solutions. Together with the CEO, I'm overhauling the internal systems. I'm rebuilding the complete product management, CRM and ERP from scratch. From employee management to resource planning, all in one system. My toolkit: React, XAF, ASP.NET Core, Entity Framework, Docker and Nginx Proxy Manager. For development I rely heavily on AI: Claude Code as a development partner, MCP servers for connecting external tools and data sources, custom skills for recurring workflows and AI agents that handle tasks autonomously.",
-    "chapter4TextShort": "Since September 2025 I've been at Brabender Solutions. Together with the CEO, I'm rebuilding the complete product management, CRM and ERP from scratch. Built with React, XAF and ASP.NET Core, powered by AI with Claude Code, MCP servers and custom skills.",
+    "chapter4Text": "Since September 2025 I've been at Brabender Solutions. Together with the CEO, I'm overhauling the internal systems. I'm rebuilding the complete product management, CRM and ERP from scratch. From employee management to resource planning, all in one system. My toolkit: React, ASP.NET Core, Entity Framework, Docker and Nginx Proxy Manager. For development I rely heavily on AI: Claude Code as a development partner, MCP servers for connecting external tools and data sources, custom skills for recurring workflows and AI agents that handle tasks autonomously.",
+    "chapter4TextShort": "Since September 2025 I've been at Brabender Solutions. Together with the CEO, I'm rebuilding the complete product management, CRM and ERP from scratch. Built with React and ASP.NET Core, powered by AI with Claude Code, MCP servers and custom skills.",
     "chapter5Title": "Tuning Schweiz",
     "chapter5Text": "Tuning Schweiz started in 2016 from a simple idea: anyone looking for a tuning event in Switzerland had to dig through countless Facebook groups, websites and forums. There was no central place. It all began with organizing my own event. That's when I realized: the scene is huge, but completely scattered. So Tuning Schweiz became the platform that brings all events, news and the community together in one place. Today over 9,000 members. And in 2026, the next step followed: with the SimRacing team Alpineers, it goes from the street to the virtual track.",
     "chapter6Title": "Dice of Fate",
@@ -34,6 +36,11 @@
   },
   "projects": {
     "title": "Projects",
+    "pillPal": {
+      "title": "PillPal: Pill & Med Reminder",
+      "description": "A medication reminder app for Android with alarm-style notifications, custom voice reminders, a health journal for blood pressure and blood sugar, multiple family profiles, and PDF/CSV export for doctors. Works fully offline.",
+      "thought": "Built to make sure no one misses an important dose – over 5,000 downloads!"
+    },
     "tuningSchweiz": {
       "title": "Tuning Schweiz App",
       "description": "A custom event app for Switzerland's largest car community with over 8,500 members. Features event management, meetup coordination, and community features.",
@@ -54,9 +61,9 @@
       "description": "A Raspberry Pi-powered dog camera that monitors our two Pomskies and sends real-time updates to Discord when it detects activity.",
       "thought": "Built this because I missed our fluffballs during work!"
     },
-    "crowDesk": {
-      "title": "Crow Desk",
-      "description": "A professional task management platform for teams, featuring project organization, task tracking, team collaboration, and a client portal with real-time updates.",
+    "mappli": {
+      "title": "Mappli",
+      "description": "A client portal for freelancers and small agencies that replaces scattered tools with one compliant workspace. Features Swiss QR-invoicing, eIDAS electronic signatures, Kanban project management, time tracking, and branded client access.",
       "thought": "A challenging project that pushed my full-stack skills!"
     },
     "syncShift": {

@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Circle, ArrowRight, Code, Briefcase, Car, Dices, Server, Smile } from 'lucide-react'
+import { Circle, ArrowRight, Code, Briefcase, Car, Smile } from 'lucide-react'
 import { VT323 } from 'next/font/google'
 import GridBackground from '@/components/GridBackground'
 import PageAtmosphere, { type PageAtmosphereHandle } from '@/components/PageAtmosphere'
@@ -28,8 +28,6 @@ const sections: Section[] = [
   { id: 'code', icon: <Code />, titleKey: 'chapter3Title', textKey: 'chapter3Text' },
   { id: 'work', icon: <Briefcase />, titleKey: 'chapter4Title', textKey: 'chapter4Text' },
   { id: 'tuning', icon: <Car />, titleKey: 'chapter5Title', textKey: 'chapter5Text' },
-  { id: 'dice', icon: <Dices />, titleKey: 'chapter6Title', textKey: 'chapter6Text' },
-  { id: 'infra', icon: <Server />, titleKey: 'chapter7Title', textKey: 'chapter7Text' },
   { id: 'life', icon: <Smile />, titleKey: 'chapter8Title', textKey: 'chapter8Text' },
 ]
 
@@ -247,7 +245,25 @@ export default function About() {
       {sections.slice(1).map((section, index) => (
         <div key={section.id}>
           {section.id === 'tuning' && (
-            <TachoTransition visible={visibleSections.has('work')} />
+            <TachoTransition
+              visible={visibleSections.has('work')}
+              onComplete={() => {
+                // Auto-advance to the Tuning Schweiz section once the gauge is full.
+                const tacho = document.getElementById('tacho')
+                const target = document.getElementById('tuning')
+                if (!tacho || !target) return
+                // Skip if the user already scrolled away from the gauge.
+                const tr = tacho.getBoundingClientRect()
+                if (tr.bottom < 0 || tr.top > window.innerHeight) return
+                window.setTimeout(() => {
+                  const mobile = window.innerWidth < 768
+                  const pos = mobile
+                    ? target.offsetTop
+                    : target.offsetTop - (window.innerHeight - target.offsetHeight) / 2
+                  window.scrollTo({ top: pos, behavior: 'smooth' })
+                }, 700)
+              }}
+            />
           )}
           <section
             id={section.id}
@@ -325,6 +341,51 @@ export default function About() {
                 </div>
               </div>
             </div>
+          ) : section.id === 'tuning' ? (
+            /* Cockpit / carbon card for Tuning Schweiz */
+            <div
+              className={`w-full max-w-3xl mx-auto transition-all duration-1000 ease-out
+                ${visibleSections.has(section.id)
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-16'}`}
+            >
+              <div
+                className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-orange-500/10"
+                style={{
+                  backgroundColor: '#0c0c0c',
+                  backgroundImage: `
+                    repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 5px),
+                    repeating-linear-gradient(-45deg, rgba(255,255,255,0.04) 0, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 5px)
+                  `,
+                }}
+              >
+                {/* Header bar */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40">
+                  <span className="text-xs tracking-[0.3em] text-orange-400 font-mono">COCKPIT</span>
+                  <span className="flex items-center gap-2 text-xs text-white/40 font-mono">
+                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                    TUNING SCHWEIZ
+                  </span>
+                </div>
+
+                {/* Body — scrollable inside on mobile (ScrollSnap blocks page scroll there) */}
+                <div
+                  data-terminal-scroll
+                  className="px-6 py-10 md:py-12 flex flex-col items-center text-center overflow-y-auto md:overflow-visible max-h-[70vh] md:max-h-none overscroll-contain"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {/* Logo */}
+                  <img
+                    src="/schweiz.png"
+                    alt="Tuning Schweiz logo"
+                    className="h-24 md:h-32 w-auto object-contain drop-shadow-[0_0_18px_rgba(249,115,22,0.35)] mb-8 shrink-0"
+                  />
+
+                  <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">{t(section.titleKey)}</h2>
+                  <p className="text-sm md:text-lg leading-relaxed text-white/70 max-w-2xl">{t(section.textKey)}</p>
+                </div>
+              </div>
+            </div>
           ) : (
             /* Default section layout */
             <div
@@ -373,7 +434,9 @@ export default function About() {
 
       <ScrollSnap
         targets={[
-          ...sections.slice(1).map(s => `#${s.id}`),
+          ...sections.slice(1).flatMap(s =>
+            s.id === 'tuning' ? ['#tacho', `#${s.id}`] : [`#${s.id}`]
+          ),
         ]}
         noSnapZone="[data-keyword-zoom]"
         onNavigate={(fromId, toId) => {

@@ -1,7 +1,14 @@
 services:
   sohneg:
-    image: harbor.sohneg.ch/sohneg.ch/web:latest
+    image: harbor.sohneg.ch/sohneg.ch/web:${TAG:-latest}
     container_name: sohneg
     restart: unless-stopped
     ports:
       - "4001:3000"
+    networks:
+      - default
+      - docker_default
+
+networks:
+  docker_default:
+    external: true

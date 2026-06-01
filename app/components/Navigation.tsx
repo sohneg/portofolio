@@ -1,16 +1,17 @@
 'use client'
 
 import { Link, usePathname, useRouter } from '@/i18n/routing'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from './ThemeProvider'
 import { useEffect, useState } from 'react'
 import { Home, User, Briefcase, Mail, Sun, Moon, MoreHorizontal, X } from 'lucide-react'
+import Tooltip from './Tooltip'
 
 const navItems = [
-  { href: '/' as const, icon: <Home /> },
-  { href: '/about' as const, icon: <User /> },
-  { href: '/projects' as const, icon: <Briefcase /> },
-  { href: '/contact' as const, icon: <Mail /> },
+  { href: '/' as const, icon: <Home />, key: 'home' },
+  { href: '/about' as const, icon: <User />, key: 'about' },
+  { href: '/projects' as const, icon: <Briefcase />, key: 'projects' },
+  { href: '/contact' as const, icon: <Mail />, key: 'contact' },
 ]
 
 export default function Navigation() {
@@ -18,6 +19,7 @@ export default function Navigation() {
   const locale = useLocale()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
+  const t = useTranslations('navigation')
 
   const activeIndex = navItems.findIndex(item => item.href === pathname)
   const [prevIndex, setPrevIndex] = useState(activeIndex)
@@ -106,35 +108,40 @@ export default function Navigation() {
           </div>
 
           {navItems.map((item, index) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              className={`relative z-10 w-12 h-12 flex items-center justify-center rounded-full transition-colors duration-300
-                ${pathname === item.href
-                  ? 'text-white'
-                  : 'hover:bg-nav-hover text-secondary'
-                }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-            </Link>
+            <Tooltip key={item.href} text={t(item.key)} position="right">
+              <Link
+                href={item.href}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                className={`relative z-10 w-12 h-12 flex items-center justify-center rounded-full transition-colors duration-300
+                  ${pathname === item.href
+                    ? 'text-white'
+                    : 'hover:bg-nav-hover text-secondary'
+                  }`}
+              >
+                <span className="text-xl">{item.icon}</span>
+              </Link>
+            </Tooltip>
           ))}
         </div>
 
         <div className="flex flex-col gap-2 mt-2">
-          <button
-            onClick={toggleLocale}
-            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all text-sm font-medium"
-          >
-            {locale.toUpperCase()}
-          </button>
-          <button
-            onClick={toggleTheme}
-            className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all"
-          >
-            <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
-          </button>
+          <Tooltip text={t('language')} position="right">
+            <button
+              onClick={toggleLocale}
+              className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all text-sm font-medium"
+            >
+              {locale.toUpperCase()}
+            </button>
+          </Tooltip>
+          <Tooltip text={t('theme')} position="right">
+            <button
+              onClick={toggleTheme}
+              className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-nav-hover cursor-pointer text-secondary transition-all"
+            >
+              <span className="text-xl">{theme === 'dark' ? <Sun /> : <Moon />}</span>
+            </button>
+          </Tooltip>
         </div>
       </nav>
 

@@ -4,43 +4,75 @@ import { useEffect, useRef, useState } from 'react'
 
 interface TachoTransitionProps {
   visible: boolean
+  /** Called once when the needle finishes its rev to the maximum. */
+  onComplete?: () => void
 }
 
-const NEEDLE_DURATION = 3000
-
-export default function TachoTransition({ visible }: TachoTransitionProps) {
-  const [needleAngle, setNeedleAngle] = useState(-130)
-  const [count, setCount] = useState(0)
-  const [showCount, setShowCount] = useState(false)
-  const startedRef = useRef(false)
+export default function TachoTransition({ visible, onComplete }: TachoTransitionProps) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  // Needle revs from 0 → max once the gauge is centred in the viewport.
+  const [progress, setProgress] = useState(0)
+  // Self-managed visibility so the gauge shows even when reloaded directly on it.
+  const [inView, setInView] = useState(false)
   const rafRef = useRef(0)
+  const startedRef = useRef(false)
+  // Keep latest callback without re-running the observer effect.
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
 
   useEffect(() => {
-    if (!visible || startedRef.current) return
-    startedRef.current = true
+    const el = rootRef.current
+    if (!el) return
 
-    const startTime = performance.now()
-    const animate = (now: number) => {
-      const elapsed = now - startTime
-      const t = Math.min(1, elapsed / NEEDLE_DURATION)
-      const eased = 1 - Math.pow(1 - t, 2)
-      setNeedleAngle(-130 + eased * 260)
-      setCount(Math.round(eased * 9000))
-      if (t > 0.7 && !showCount) setShowCount(true)
-      if (t < 1) rafRef.current = requestAnimationFrame(animate)
+    const DURATION = 1800
+    const startRev = () => {
+      if (startedRef.current) return
+      startedRef.current = true
+      const t0 = performance.now()
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - t0) / DURATION)
+        const eased = 1 - Math.pow(1 - t, 3) // easeOutCubic: fast rev, gentle settle
+        setProgress(eased)
+        if (t < 1) {
+          rafRef.current = requestAnimationFrame(tick)
+        } else {
+          onCompleteRef.current?.()
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick)
     }
-    rafRef.current = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [visible, showCount])
 
-  const needleRad = (needleAngle - 90) * (Math.PI / 180)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setInView(true)
+          if (entry.intersectionRatio >= 0.6) startRev()
+        })
+      },
+      { threshold: [0, 0.6] }
+    )
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  const count = Math.round(progress * 9000)
+  const showCount = progress > 0.6
+
+  // 180° sweep over the top: progress 0 → points left, 1 → points right (never droops below the arc)
+  const needleRad = (180 + progress * 180) * (Math.PI / 180)
   const r = (n: number) => Math.round(n * 100) / 100
   const nx = r(50 + 38 * Math.cos(needleRad))
-  const ny = r(50 + 38 * Math.sin(needleRad))
+  const ny = r(52 + 38 * Math.sin(needleRad))
 
   return (
-    <div className={`min-h-screen flex items-center justify-center z-[2] transition-all duration-1000
-      ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}
+    <div
+      id="tacho"
+      ref={rootRef}
+      className={`min-h-screen flex items-center justify-center z-[2] transition-all duration-1000
+      ${visible || inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}
     >
       <div className="flex flex-col items-center">
         {/* Tachometer */}
@@ -82,19 +114,19 @@ export default function TachoTransition({ visible }: TachoTransitionProps) {
 
           {/* Tick marks */}
           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((val) => {
-            const angle = (-130 + (val / 9) * 260) * (Math.PI / 180)
-            const cos = Math.cos(angle - Math.PI / 2)
-            const sin = Math.sin(angle - Math.PI / 2)
+            const rad = (180 + (val / 9) * 180) * (Math.PI / 180)
+            const cos = Math.cos(rad)
+            const sin = Math.sin(rad)
             const r = (n: number) => Math.round(n * 100) / 100
             return (
               <g key={val}>
                 <line
-                  x1={r(50 + 36 * cos)} y1={r(50 + 36 * sin)}
-                  x2={r(50 + 42 * cos)} y2={r(50 + 42 * sin)}
+                  x1={r(50 + 36 * cos)} y1={r(52 + 36 * sin)}
+                  x2={r(50 + 42 * cos)} y2={r(52 + 42 * sin)}
                   stroke="white" strokeWidth="0.8" opacity="0.5"
                 />
                 <text
-                  x={r(50 + 32 * cos)} y={r(50 + 32 * sin)}
+                  x={r(50 + 31 * cos)} y={r(52 + 31 * sin)}
                   textAnchor="middle" dominantBaseline="central"
                   fill="white" fontSize="3.5" opacity="0.4"
                 >

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 interface TooltipProps {
   children: React.ReactNode
   text: string
+  position?: 'top' | 'right'
 }
 
 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*'
@@ -21,7 +22,7 @@ interface CharState {
   phase: CharPhase
 }
 
-export default function Tooltip({ children, text }: TooltipProps) {
+export default function Tooltip({ children, text, position = 'top' }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [charStates, setCharStates] = useState<CharState[]>(
     () => text.split('').map(c => ({ char: c, phase: 'done' as CharPhase }))
@@ -101,9 +102,12 @@ export default function Tooltip({ children, text }: TooltipProps) {
     >
       {children}
       <div
-        className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 z-50
+        className={`absolute px-3 py-1.5 z-50
           bg-nav text-foreground text-sm rounded-lg whitespace-nowrap font-mono
           transition-opacity duration-200 pointer-events-none
+          ${position === 'right'
+            ? 'left-full top-1/2 -translate-y-1/2 ml-3'
+            : 'bottom-full left-1/2 -translate-x-1/2 mb-2'}
           ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       >
         {charStates.map((cs, i) => (
@@ -118,7 +122,11 @@ export default function Tooltip({ children, text }: TooltipProps) {
           </span>
         ))}
         {/* Arrow */}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-nav" />
+        {position === 'right' ? (
+          <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-nav" />
+        ) : (
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-nav" />
+        )}
       </div>
     </div>
   )

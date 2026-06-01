@@ -21,7 +21,10 @@ const DissolveFilters = () => (
   </svg>
 )
 
-const projectLinks: Record<string, { icon: React.ReactNode; href: string; label: string }[]> = {
+const projectLinks: Record<string, { icon: React.ReactNode; href: string; label: string; offline?: boolean }[]> = {
+  pillPal: [
+    { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.sohneg.pillpal', label: 'Google Play' },
+  ],
   tuningSchweiz: [
     { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.tuningschweiz', label: 'Google Play' },
     { icon: <FaAppStoreIos />, href: 'https://apps.apple.com/app/tuning-schweiz/id6502833192', label: 'App Store' },
@@ -30,12 +33,12 @@ const projectLinks: Record<string, { icon: React.ReactNode; href: string; label:
     { icon: <FaTiktok />, href: 'https://www.tiktok.com/@tuningschweiz', label: 'TikTok' },
     { icon: <FaYoutube />, href: 'https://www.youtube.com/channel/UCAPprVHXAHkJG3DPFPnk8cA', label: 'YouTube' },
   ],
-  crowDesk: [
-    { icon: <FaGlobe />, href: 'https://www.crow-desk.com/', label: 'Crow Desk' },
+  mappli: [
+    { icon: <FaGlobe />, href: 'https://mappli.ch/de', label: 'Mappli' },
   ],
   clientWebsites: [
     { icon: <FaGlobe />, href: 'https://chlitierpark.ch/', label: 'Chlitierpark Kriens' },
-    { icon: <FaGlobe />, href: 'https://pflegeheld-dahoam.ch/', label: 'Pflegeheld Dahoam' },
+    { icon: <FaGlobe />, href: 'https://pflegeheld-dahoam.ch/', label: 'Pflegeheld Dahoam (offline)', offline: true },
     { icon: <FaGlobe />, href: 'https://tuning-emotion.ch/', label: 'Tuning Emotion' },
   ],
 }
@@ -132,18 +135,31 @@ export default function Projects() {
                     {/* Links */}
                     {project.links && (
                       <div className="flex flex-wrap gap-3">
-                        {project.links.map((link) => (
-                          <Tooltip key={link.href} text={link.label}>
-                            <a
-                              href={link.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-10 h-10 flex items-center justify-center rounded-full bg-nav-hover hover:bg-orange-500 hover:text-white text-secondary transition-all"
-                            >
-                              <span className="text-lg">{link.icon}</span>
-                            </a>
-                          </Tooltip>
-                        ))}
+                        {project.links.map((link) =>
+                          link.offline ? (
+                            <Tooltip key={link.href} text={link.label}>
+                              <span
+                                aria-label={link.label}
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-nav-hover text-secondary/40 grayscale cursor-not-allowed relative"
+                              >
+                                <span className="text-lg">{link.icon}</span>
+                                {/* Diagonal strike to indicate offline */}
+                                <span className="absolute w-7 h-px bg-current rotate-45" />
+                              </span>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip key={link.href} text={link.label}>
+                              <a
+                                href={link.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-nav-hover hover:bg-orange-500 hover:text-white text-secondary transition-all"
+                              >
+                                <span className="text-lg">{link.icon}</span>
+                              </a>
+                            </Tooltip>
+                          )
+                        )}
                       </div>
                     )}
                   </div>
