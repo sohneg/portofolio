@@ -12,6 +12,7 @@ import ScrollSnap from '@/components/ScrollSnap'
 import BootSequence from '@/components/BootSequence'
 import WorkTabs from '@/components/WorkTabs'
 import TachoTransition from '@/components/TachoTransition'
+import PhotoWall from '@/components/PhotoWall'
 
 const terminalFont = VT323({ weight: '400', subsets: ['latin'] })
 
@@ -225,17 +226,6 @@ export default function About() {
             <p className="text-xl opacity-70 max-w-lg mx-auto">{t('subtitle')}</p>
           </div>
 
-          {/* Desktop: scroll hint */}
-          <div
-            ref={scrollHintRef}
-            className="absolute bottom-12 hidden md:flex flex-col items-center gap-2 animate-bounce"
-            style={{ willChange: 'opacity' }}
-          >
-            <span className="text-sm opacity-50">{t('scrollHint')}</span>
-            <div className="w-6 h-10 border-2 border-current opacity-30 rounded-full flex justify-center pt-2">
-              <div className="w-1.5 h-3 bg-current opacity-50 rounded-full animate-pulse" />
-            </div>
-          </div>
         </div>
       </KeywordZoom>
 
@@ -415,6 +405,9 @@ export default function About() {
               </p>
             </div>
           )}
+
+          {/* Photo wall (taped polaroids) — spans the whole section, scattered on desktop */}
+          {section.id === 'life' && <PhotoWall />}
         </section>
         </div>
       ))}

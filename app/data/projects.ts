@@ -8,6 +8,7 @@ export interface Project {
 
 export const projects: Project[] = [
   { key: 'pillPal', tech: ['Kotlin', 'Android', 'Jetpack', 'SQLite'] },
+  { key: 'lapse', tech: ['Kotlin', 'Android', 'Jetpack', 'SQLite'] },
   { key: 'tuningSchweiz', tech: ['Flutter', 'Dart', 'Laravel', 'Firebase', 'Angular'] },
   { key: 'businessSystem', tech: ['C#', 'Blazor', 'WPF', 'SQL Server'] },
   { key: 'vrElevator', tech: ['Unity 6', 'C#', 'Meta Quest 3'] },
@@ -23,6 +24,7 @@ export const projects: Project[] = [
  */
 export const projectTitles: Record<string, string> = {
   pillPal: 'PillPal',
+  lapse: 'Lapse',
   tuningSchweiz: 'Tuning Schweiz App',
   businessSystem: 'Business Management System',
   vrElevator: 'VR Marketing Experience',

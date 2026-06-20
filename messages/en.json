@@ -31,15 +31,21 @@
     "chapter7Title": "The Infrastructure",
     "chapter7Text": "Beyond development, I also run the infrastructure behind it all. Windows Server for the SimRacing ACC server, Linux servers at Hetzner for client websites. My workflow: Docker, Harbor, Portainer and Nginx Proxy Manager for clean deployments. From code to hosting, everything from one hand.",
     "chapter8Title": "Life Beyond Code",
-    "chapter8Text": "When I'm not coding, I make electronic music as Sonex or DJ in VRChat. And our two Pomskies Ari and Luci make sure I get enough fresh air.",
+    "chapter8Text": "When I'm not coding, I make electronic music as Sonex or DJ in VRChat. And our two Pomskies Ari and Luci make sure I get enough fresh air. I'd dreamed of getting into photography for well over ten years — recently my wife surprised me with a Nikon D5100, and I finally started shooting. Here are a few of my first photos.",
     "closingQuote": "I still make cookies, they just have a different meaning now."
   },
   "projects": {
     "title": "Projects",
+    "hint": "Hover or tap a title to read more",
     "pillPal": {
       "title": "PillPal: Pill & Med Reminder",
       "description": "A medication reminder app for Android with alarm-style notifications, custom voice reminders, a health journal for blood pressure and blood sugar, multiple family profiles, and PDF/CSV export for doctors. Works fully offline.",
       "thought": "Built to make sure no one misses an important dose – over 5,000 downloads!"
+    },
+    "lapse": {
+      "title": "Lapse: Time Awareness",
+      "description": "A screen time awareness app for Android. When you open a monitored app like YouTube, Instagram or TikTok, a small floating timer overlay shows how long you've been scrolling – a gentle, non-blocking nudge. Includes daily and weekly history, color warnings, and full customization. No ads, no tracking, fully offline.",
+      "thought": "Making the invisible visible – awareness over restriction."
     },
     "tuningSchweiz": {
       "title": "Tuning Schweiz App",
@@ -76,6 +82,24 @@
       "description": "Various websites built for local businesses and organizations using WordPress, featuring custom designs and functionality tailored to each client's needs.",
       "thought": "Love helping local businesses get online!"
     }
+  },
+  "contact": {
+    "title": "Get in touch",
+    "subtitle": "Have a project or a question? Send me a message.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "you@example.com",
+    "messagePlaceholder": "What can I help you with?",
+    "send": "Send message",
+    "sending": "Sending…",
+    "fakeCardLabel": "Credit card number",
+    "justKidding": "Just kidding",
+    "freeToAsk": "Asking is free",
+    "success": "Thanks! Your message has been sent. I'll get back to you soon.",
+    "error": "Something went wrong. Please try again or email me directly.",
+    "directLine": "Or email me directly at"
   },
   "notFound": {
     "title": "404",

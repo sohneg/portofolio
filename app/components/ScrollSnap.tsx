@@ -19,8 +19,10 @@ export default function ScrollSnap({
 }: ScrollSnapProps) {
   const isAnimatingRef = useRef(false)
   const cooldownRef = useRef(false)
-  const [isMobile, setIsMobile] = useState(false)
   const [currentIdx, setCurrentIdx] = useState(0)
+  const [mounted, setMounted] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [pressed, setPressed] = useState<'up' | 'down' | null>(null)
 
   const getSnapPoints = useCallback((): { pos: number; id: string }[] => {
     const points: { pos: number; id: string }[] = [{ pos: 0, id: 'hero' }]
@@ -61,13 +63,12 @@ export default function ScrollSnap({
   }, [])
 
   const animateTo = useCallback((target: number, duration: number) => {
-    isAnimatingRef.current = true
     const start = window.scrollY
     const dist = target - start
-    if (Math.abs(dist) < 5) {
-      isAnimatingRef.current = false
-      return
-    }
+    if (Math.abs(dist) < 5) return
+
+    isAnimatingRef.current = true
+    setIsAnimating(true) // visual: grey out buttons during the scroll
 
     const startTime = performance.now()
     const animate = (now: number) => {
@@ -82,6 +83,7 @@ export default function ScrollSnap({
         setTimeout(() => {
           isAnimatingRef.current = false
           cooldownRef.current = false
+          setIsAnimating(false) // scroll stopped: restore buttons
         }, 200)
       }
     }
@@ -128,19 +130,9 @@ export default function ScrollSnap({
   useEffect(() => {
     if (!enabled) return
 
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    // Desktop: wheel snap
+    // Block native scrolling entirely — navigation happens only via the on-screen buttons.
     const onWheel = (e: WheelEvent) => {
-      if (isAnimatingRef.current || cooldownRef.current) {
-        e.preventDefault()
-        return
-      }
-      if (Math.abs(e.deltaY) < 10) return
       e.preventDefault()
-      navigate(e.deltaY > 0 ? 1 : -1)
     }
 
     // Keyboard
@@ -150,6 +142,9 @@ export default function ScrollSnap({
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return
       e.preventDefault()
       const direction = (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') ? 1 : -1
+      // Visually press the matching on-screen key
+      setPressed(direction === 1 ? 'down' : 'up')
+      window.setTimeout(() => setPressed(null), 150)
       navigate(direction as 1 | -1)
     }
 
@@ -184,7 +179,6 @@ export default function ScrollSnap({
       window.removeEventListener('wheel', onWheel)
       window.removeEventListener('keydown', onKeyDown)
       document.removeEventListener('touchmove', onTouchMove)
-      window.removeEventListener('resize', checkMobile)
     }
   }, [enabled, navigate])
 
@@ -198,50 +192,48 @@ export default function ScrollSnap({
     return () => window.removeEventListener('scroll', onScroll)
   }, [getSnapPoints, findCurrentIndex])
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   if (!enabled) return null
 
-  // Mobile: show nav buttons
-  if (!isMobile) return null
+  // Only render (and touch `document`) on the client — avoids SSR "document is not defined".
+  if (!mounted) return null
 
+  // Navigation buttons — shown on both desktop and mobile
   const points = getSnapPoints()
   const isFirst = currentIdx <= 0
   const isLast = currentIdx >= points.length - 1
 
   return (
     <>
-      <style>{`
-        @keyframes rainbow-pulse {
-          0%, 100% { box-shadow: 0 0 8px 2px rgba(249,115,22,0.5), 0 0 16px 4px rgba(249,115,22,0.2); transform: scale(1); }
-          33% { box-shadow: 0 0 8px 2px rgba(168,85,247,0.5), 0 0 16px 4px rgba(168,85,247,0.2); transform: scale(1); }
-          66% { box-shadow: 0 0 8px 2px rgba(59,130,246,0.5), 0 0 16px 4px rgba(59,130,246,0.2); transform: scale(1); }
-        }
-        @keyframes rainbow-pump {
-          0%, 100% { box-shadow: 0 0 10px 3px rgba(249,115,22,0.6), 0 0 20px 6px rgba(249,115,22,0.3); transform: scale(1); }
-          16% { box-shadow: 0 0 12px 4px rgba(168,85,247,0.6), 0 0 24px 8px rgba(168,85,247,0.3); transform: scale(1.12); }
-          33% { box-shadow: 0 0 10px 3px rgba(59,130,246,0.6), 0 0 20px 6px rgba(59,130,246,0.3); transform: scale(1); }
-          50% { box-shadow: 0 0 12px 4px rgba(16,185,129,0.6), 0 0 24px 8px rgba(16,185,129,0.3); transform: scale(1.12); }
-          66% { box-shadow: 0 0 10px 3px rgba(249,115,22,0.6), 0 0 20px 6px rgba(249,115,22,0.3); transform: scale(1); }
-          83% { box-shadow: 0 0 12px 4px rgba(168,85,247,0.6), 0 0 24px 8px rgba(168,85,247,0.3); transform: scale(1.12); }
-        }
-      `}</style>
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
         <button
-          onClick={() => navigate(1)}
-          disabled={isLast}
-          className={`w-14 h-14 flex items-center justify-center rounded-full bg-nav transition-opacity
-            ${isLast ? 'opacity-30' : 'opacity-90 active:opacity-100'}`}
-          style={!isLast ? { animation: `${isFirst ? 'rainbow-pump' : 'rainbow-pulse'} 3s ease-in-out infinite` } : undefined}
-        >
-          <ChevronDown className="w-7 h-7" />
-        </button>
-        <button
           onClick={() => navigate(-1)}
-          disabled={isFirst}
-          className={`w-10 h-10 flex items-center justify-center rounded-full bg-nav/60 transition-opacity
-            ${isFirst ? 'opacity-0' : 'opacity-60 active:opacity-100'}`}
+          disabled={isFirst || isAnimating}
+          className={`w-10 h-10 flex items-center justify-center rounded-full bg-nav/60 transition-[opacity,transform] cursor-pointer disabled:cursor-default active:scale-90
+            ${pressed === 'up' ? 'scale-90' : ''}
+            ${isFirst ? 'opacity-0' : isAnimating ? 'opacity-30' : 'opacity-60 active:opacity-100'}`}
         >
           <ChevronUp className="w-5 h-5" />
         </button>
+        <div className="relative">
+          {/* soft attention pulse behind the key (hidden while scrolling) */}
+          {!isLast && !isAnimating && (
+            <span aria-hidden="true" className="absolute -inset-1 rounded-xl bg-orange-500/25 blur-md animate-pulse" />
+          )}
+          <button
+            onClick={() => navigate(1)}
+            disabled={isLast || isAnimating}
+            className={`relative w-14 h-12 flex items-center justify-center rounded-xl bg-nav border-t border-white/15 cursor-pointer disabled:cursor-default transition-[transform,box-shadow,opacity] duration-100
+              active:translate-y-[3px] active:shadow-[0_1px_0_0_var(--bg-nav-hover)]
+              ${pressed === 'down' ? 'translate-y-[3px] shadow-[0_1px_0_0_var(--bg-nav-hover)]' : 'shadow-[0_4px_0_0_var(--bg-nav-hover)]'}
+              ${isLast || isAnimating ? 'opacity-40' : 'opacity-100'}`}
+          >
+            <ChevronDown className="w-6 h-6" />
+          </button>
+        </div>
       </div>
     </>
   )

@@ -101,6 +101,89 @@ body {
   margin: 2rem 0;
 }
 
+/* Photo lightbox (about page photo wall) */
+@keyframes lightbox-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes lightbox-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-lightbox-fade {
+  animation: lightbox-fade 0.2s ease-out;
+}
+.animate-lightbox-zoom {
+  animation: lightbox-zoom 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Speech bubble rising up (contact joke) */
+@keyframes bubble-up {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-bubble-up {
+  animation: bubble-up 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Glitch-in reveal (projects list) — brand orange/cyan RGB split */
+@keyframes glitch-in {
+  0% {
+    transform: translateX(-3px);
+    text-shadow: 2px 0 #f97316, -2px 0 #22d3ee;
+    opacity: 0.4;
+  }
+  20% {
+    transform: translateX(3px);
+    text-shadow: -2px 0 #f97316, 2px 0 #22d3ee;
+  }
+  40% {
+    transform: translateX(-2px);
+    text-shadow: 1px 0 #f97316, -1px 0 #22d3ee;
+  }
+  60% {
+    transform: translateX(2px);
+    text-shadow: -1px 0 #f97316, 1px 0 #22d3ee;
+  }
+  80% {
+    transform: translateX(-1px);
+    text-shadow: 1px 0 #f97316;
+  }
+  100% {
+    transform: translateX(0);
+    text-shadow: none;
+    opacity: 1;
+  }
+}
+.animate-glitch-in {
+  animation: glitch-in 0.45s steps(2, end);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-glitch-in {
+    animation: none;
+  }
+}
+
 /* Timeline dot pulse animation */
 @keyframes gentle-pulse {
   0%, 100% {

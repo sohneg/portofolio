@@ -1,7 +1,9 @@
+'use client'
+
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { FaGooglePlay, FaAppStoreIos, FaInstagram, FaTiktok, FaYoutube, FaGlobe } from 'react-icons/fa6'
-import Tooltip from '@/components/Tooltip'
-import ThoughtBubble from '@/components/ThoughtBubble'
+import ProjectCard from '@/components/ProjectCard'
 import { projects as projectData } from '@/data/projects'
 
 // SVG filters for dissolving effect with different seeds
@@ -25,6 +27,9 @@ const projectLinks: Record<string, { icon: React.ReactNode; href: string; label:
   pillPal: [
     { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.sohneg.pillpal', label: 'Google Play' },
   ],
+  lapse: [
+    { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.sohneg.lapse', label: 'Google Play' },
+  ],
   tuningSchweiz: [
     { icon: <FaGooglePlay />, href: 'https://play.google.com/store/apps/details?id=ch.tuningschweiz', label: 'Google Play' },
     { icon: <FaAppStoreIos />, href: 'https://apps.apple.com/app/tuning-schweiz/id6502833192', label: 'App Store' },
@@ -40,6 +45,7 @@ const projectLinks: Record<string, { icon: React.ReactNode; href: string; label:
     { icon: <FaGlobe />, href: 'https://chlitierpark.ch/', label: 'Chlitierpark Kriens' },
     { icon: <FaGlobe />, href: 'https://pflegeheld-dahoam.ch/', label: 'Pflegeheld Dahoam (offline)', offline: true },
     { icon: <FaGlobe />, href: 'https://tuning-emotion.ch/', label: 'Tuning Emotion' },
+    { icon: <FaGlobe />, href: 'https://digisolve.ch/de', label: 'Digisolve' },
   ],
 }
 
@@ -50,11 +56,21 @@ const projects = projectData.map(p => ({
 
 export default function Projects() {
   const t = useTranslations('projects')
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   return (
     <main className="min-h-screen py-20 px-8">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-16 text-center">{t('title')}</h1>
+        <h1 className="text-4xl font-bold mb-3 text-center">{t('title')}</h1>
+
+        {/* Interaction hint — fades out after the first reveal */}
+        <p
+          className="text-secondary text-sm text-center mb-14 transition-opacity duration-500"
+          style={{ opacity: hasInteracted ? 0 : 0.7 }}
+          aria-hidden={hasInteracted}
+        >
+          {t('hint')}
+        </p>
 
         <DissolveFilters />
 
@@ -66,105 +82,15 @@ export default function Projects() {
           {/* Projects */}
           <div className="space-y-12">
             {projects.map((project, index) => (
-              <div key={project.key} className="relative pl-8 md:pl-20">
-                {/* Timeline dot with thought bubble */}
-                <div className="absolute left-0 md:left-8 top-2 -translate-x-1/2 z-[100]">
-                  <ThoughtBubble text={t(`${project.key}.thought`)}>
-                    <div className="relative cursor-pointer group flex items-center justify-center w-6 h-6">
-                      {/* Pulse ring */}
-                      <div className="absolute w-3 h-3 rounded-full bg-orange-500 animate-gentle-pulse" />
-                      {/* Main dot with glow */}
-                      <div className="relative w-3 h-3 rounded-full bg-orange-500 animate-soft-glow group-hover:scale-150 transition-transform duration-200" />
-                    </div>
-                  </ThoughtBubble>
-                </div>
-
-                {/* Project card with notebook lines */}
-                <div className="relative rounded-lg bg-nav/30 p-6">
-                  {/* Math book grid background with dissolve effect */}
-                  <div
-                    className="absolute inset-0 pointer-events-none rounded-lg overflow-hidden"
-                    style={{
-                      backgroundImage: `
-                        repeating-linear-gradient(
-                          to bottom,
-                          transparent,
-                          transparent 19px,
-                          var(--text-secondary) 19px,
-                          var(--text-secondary) 20px
-                        ),
-                        repeating-linear-gradient(
-                          to right,
-                          transparent,
-                          transparent 19px,
-                          var(--text-secondary) 19px,
-                          var(--text-secondary) 20px
-                        )
-                      `,
-                      opacity: 0.25,
-                      filter: `url(#dissolve-${index % 6})`,
-                      maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.4) 85%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.4) 85%, transparent 100%)',
-                    }}
-                  />
-
-                  {/* Content */}
-                  <div className="relative">
-                    {/* Title with underline */}
-                    <h2 className="text-xl font-semibold mb-1 inline-block">
-                      {t(`${project.key}.title`)}
-                      <div className="h-0.5 bg-orange-500 mt-1 w-full" />
-                    </h2>
-
-                    <p className="text-secondary mt-3 mb-4">
-                      {t(`${project.key}.description`)}
-                    </p>
-
-                    {/* Tech tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.tech.map((tech) => (
-                        <span
-                          key={tech}
-                          className="text-xs px-2 py-1 rounded-full bg-orange-500/10 text-orange-500"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Links */}
-                    {project.links && (
-                      <div className="flex flex-wrap gap-3">
-                        {project.links.map((link) =>
-                          link.offline ? (
-                            <Tooltip key={link.href} text={link.label}>
-                              <span
-                                aria-label={link.label}
-                                className="w-10 h-10 flex items-center justify-center rounded-full bg-nav-hover text-secondary/40 grayscale cursor-not-allowed relative"
-                              >
-                                <span className="text-lg">{link.icon}</span>
-                                {/* Diagonal strike to indicate offline */}
-                                <span className="absolute w-7 h-px bg-current rotate-45" />
-                              </span>
-                            </Tooltip>
-                          ) : (
-                            <Tooltip key={link.href} text={link.label}>
-                              <a
-                                href={link.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-10 h-10 flex items-center justify-center rounded-full bg-nav-hover hover:bg-orange-500 hover:text-white text-secondary transition-all"
-                              >
-                                <span className="text-lg">{link.icon}</span>
-                              </a>
-                            </Tooltip>
-                          )
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <ProjectCard
+                key={project.key}
+                projectKey={project.key}
+                index={index}
+                tech={project.tech}
+                links={project.links}
+                isFirst={index === 0}
+                onReveal={() => setHasInteracted(true)}
+              />
             ))}
           </div>
         </div>

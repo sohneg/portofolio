@@ -5,6 +5,13 @@ services:
     restart: unless-stopped
     ports:
       - "4001:3000"
+    environment:
+      SMTP_HOST: ${SMTP_HOST:-mail.infomaniak.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-contact@sohneg.ch}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM:-Sohneg.ch <contact@sohneg.ch>}
+      CONTACT_RECIPIENT: ${CONTACT_RECIPIENT:-contact@sohneg.ch}
     networks:
       - default
       - docker_default

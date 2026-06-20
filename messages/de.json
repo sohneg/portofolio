@@ -31,15 +31,21 @@
     "chapter7Title": "Die Infrastruktur",
     "chapter7Text": "Neben der Entwicklung betreibe ich auch die Infrastruktur dahinter. Windows Server für den SimRacing ACC-Server, Linux Server bei Hetzner für Kunden-Webseiten. Mein Workflow: Docker, Harbor, Portainer und Nginx Proxy Manager für saubere Deployments. Vom Code bis zum Hosting, alles aus einer Hand.",
     "chapter8Title": "Das Leben daneben",
-    "chapter8Text": "Wenn ich nicht code, mache ich elektronische Musik als Sonex oder lege in VRChat auf. Und unsere beiden Pomskys Ari und Luci sorgen dafür, dass ich genug frische Luft bekomme.",
+    "chapter8Text": "Wenn ich nicht code, mache ich elektronische Musik als Sonex oder lege in VRChat auf. Und unsere beiden Pomskys Ari und Luci sorgen dafür, dass ich genug frische Luft bekomme. Eine Kamera wünsche ich mir schon seit über zehn Jahren – vor Kurzem hat mir meine Frau eine Nikon D5100 geschenkt, und ich habe endlich mit dem Fotografieren angefangen. Hier ein paar meiner ersten Aufnahmen.",
     "closingQuote": "Ich mache immer noch Cookies, sie haben nur eine andere Bedeutung bekommen."
   },
   "projects": {
     "title": "Projekte",
+    "hint": "Fahre über einen Titel oder tippe ihn an, um mehr zu lesen",
     "pillPal": {
       "title": "PillPal: Pill & Med Reminder",
       "description": "Eine Medikamenten-Erinnerungs-App für Android mit Weckalarm-Benachrichtigungen, eigenen Sprachnachrichten, einem Gesundheitstagebuch für Blutdruck und Blutzucker, mehreren Familienprofilen und PDF/CSV-Export für den Arzt. Funktioniert komplett offline.",
       "thought": "Entwickelt, damit niemand eine wichtige Dosis verpasst – über 5'000 Downloads!"
+    },
+    "lapse": {
+      "title": "Lapse: Time Awareness",
+      "description": "Eine App für mehr Bewusstsein über die Bildschirmzeit auf Android. Öffnest du eine überwachte App wie YouTube, Instagram oder TikTok, erscheint ein kleiner schwebender Timer, der zeigt, wie lange du schon scrollst – ein freundlicher, unaufdringlicher Hinweis. Mit Tages- und Wochenverlauf, Farbwarnungen und voller Anpassung. Keine Werbung, kein Tracking, komplett offline.",
+      "thought": "Das Unsichtbare sichtbar machen – Bewusstsein statt Verbote."
     },
     "tuningSchweiz": {
       "title": "Tuning Schweiz App",
@@ -76,6 +82,24 @@
       "description": "Verschiedene Webseiten für lokale Unternehmen und Organisationen mit WordPress erstellt, mit individuellen Designs und Funktionen, die auf die Bedürfnisse jedes Kunden zugeschnitten sind.",
       "thought": "Ich liebe es, lokalen Unternehmen online zu helfen!"
     }
+  },
+  "contact": {
+    "title": "Kontakt aufnehmen",
+    "subtitle": "Ein Projekt oder eine Frage? Schreib mir eine Nachricht.",
+    "name": "Name",
+    "email": "E-Mail",
+    "message": "Nachricht",
+    "namePlaceholder": "Dein Name",
+    "emailPlaceholder": "du@beispiel.ch",
+    "messagePlaceholder": "Wie kann ich dir helfen?",
+    "send": "Nachricht senden",
+    "sending": "Senden …",
+    "fakeCardLabel": "Kreditkartennummer",
+    "justKidding": "Just kidding",
+    "freeToAsk": "Fragen kostet nichts",
+    "success": "Danke! Deine Nachricht wurde gesendet. Ich melde mich bald.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib mir direkt.",
+    "directLine": "Oder schreib mir direkt an"
   },
   "notFound": {
     "title": "404",
