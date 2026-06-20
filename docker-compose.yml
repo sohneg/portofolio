@@ -4,7 +4,7 @@ services:
     container_name: sohneg
     restart: unless-stopped
     ports:
-      - "4001:3000"
+      - "4003:3000"
     environment:
       SMTP_HOST: ${SMTP_HOST:-mail.infomaniak.com}
       SMTP_PORT: ${SMTP_PORT:-587}
