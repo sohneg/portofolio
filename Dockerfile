@@ -3,7 +3,9 @@ FROM node:22-alpine AS base
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm install (not ci) so the Linux build resolves platform-specific optional
+# deps even if the Windows-generated lockfile is missing them.
+RUN npm install --no-audit --no-fund
 
 FROM base AS builder
 WORKDIR /app
